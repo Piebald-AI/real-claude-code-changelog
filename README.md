@@ -77,7 +77,7 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
-### 2.1.322 ◆◆◇◇
+### 2.1.322 ◆◆◆◆
 
 - 🟡 (2.1.323) Left plugins' `config.set` hooks unasked when `/fast on` or `/fast off` is typed on Vertex; the `/fast` menu still asks them.
 - 🟢 Added fast mode on Vertex AI for Fable 5.2 and Mythos 5.2 in the `global`, `us` and `eu` regions; `/fast` turns it on for the session only, moves an unsupported model to Fable 5.2, and shows the price as 2x standard.
