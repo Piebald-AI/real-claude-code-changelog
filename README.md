@@ -648,13 +648,14 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
-### 2.1.250 ◆◆◇◇
+### 2.1.250 ◆◆◆◆
 
-- 🔴 Changed Artifact watch guidance to restart watches only on user request or when the task needs republishes, noting they do not reconnect automatically.
-- 🔴 Improved Artifact re-watch notices to explain that there is nothing to re-watch while live updates are off.
-- 🔴 Added `cf_mitigated` and `upgrade_rejected` classifications for WebSocket upgrade failures, with their HTTP status codes.
-- 🔴 Improved stalled Artifact watch reports with reconnect limits, unavailable errors and HTTP status details from startup failures.
-- 🔴 Changed stalled Artifact watches to allow separate randomized long delays and clear the old stall deadline when rearmed.
+- 🔴 Changed Artifact watch guidance to restart watches only on user request or when the task needs republishes, noting they don't reconnect automatically.
+- 🔴 Improved Artifact re-watch notices to explain that there's nothing to re-watch while live updates are off.
+- 🔴 Parsed existing WebSocket upgrade-failure labels so Artifact watches can use their HTTP status and Cloudflare-mitigation data in retry decisions and telemetry.
+- 🔴 Treated unavailable startup responses and slow unanswered startup requests as stalled Artifact watches, using stall retries rather than counting each as an ordinary reconnect failure, and added their HTTP status to stall reports.
+- 🔴 Changed stalled Artifact watches to use randomized longer retries and give-up deadlines, and clear the old stall deadline when rearmed.
+- 🔴 Kept Artifact watch leases after WebSocket upgrade failures classified as unavailable or Cloudflare-mitigated, so eligible reconnects can try the existing lease again.
 - 🔴 Added passive delivery for watch-ended notices while keeping their advice attached.
 
 ---
