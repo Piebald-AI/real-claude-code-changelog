@@ -58,9 +58,16 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 # Changelog
 
-### 2.1.325 ◆◆◆◇
+### 2.1.325 ◆◆◆◆
 
 - 🔴 Removed the built-in `cc-plugin-themes` plugin added in 2.1.324, with `/custom-theme`, `/fireworks` and 20 animated chat backdrops for desktop and mobile clients.
+
+<details>
+<summary>1 change with no effect in this build</summary>
+
+- 🔴 Moved the startup profiler's initialization mark and first wall-clock and process-uptime samples to a different point in module loading inside the worker that runs plugin function hooks; nothing in the worker reports them.
+
+</details>
 
 ---
 
