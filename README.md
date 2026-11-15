@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 65 releases from 2.1.**112** to 2.1.**325**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 67 releases from 2.1.**112** to 2.1.**325**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -729,12 +729,34 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
-### 2.1.252 ◆◇◇◇
+### 2.1.252 ◆◆◆◆
 
-- 🔴 Added support for retaining `prompt_snapshot` events through session-context processing.
-- 🔴 Added explanations for session-context rereads after compaction, managed-settings changes, working-directory additions, settings sync or account changes.
-- 🔴 Added a model instruction to stop using the previously announced scratchpad directory when it becomes unavailable.
+- 🔴 Made `/add-dir` drop its cached CLAUDE.md content, so with `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD` set the added directory's CLAUDE.md files and rules reach Claude from the next message instead of after a later reload such as the next compaction.
+- 🔴 Added recovery steps to the "task output swap refused (tasks dir moved or linked)" error: restart with `CLAUDE_CODE_TMPDIR` set to a fresh directory, or remove the stray directory or symbolic link at the project's temporary folder (not what it points to) and restart.
+- 🔴 Changed the static system-prompt mode (`CLAUDE_CODE_CARVED_SLATE` or a remote switch, off by default) to send CLAUDE.md and other instruction files as a message in the conversation instead of in the context block added to every request, and after a re-read to send only the files that changed, with a line for each file that's gone.
+- 🔴 Made the static system-prompt mode record the main conversation's system prompt and tool descriptions in the transcript on its first request and send those recorded versions on later requests and after a resume, until the conversation is compacted, unless a custom or appended system prompt is set or `CLAUDE_CODE_SIMPLE` is on; side requests that fork the conversation send the recorded versions too, and `/context` counts them.
+- 🔴 Added, in the static system-prompt mode, the reason to notices that session context or instruction files were re-read (after compaction, a managed-settings change, an added working directory, a settings sync, an account change, or the start of a resumed session), and a notice that the earlier account, project and git values no longer apply when a re-read finds none.
+- 🔴 Moved the scratchpad directory, in the static system-prompt mode, from its own system-prompt section into the environment notice, which now also announces a new scratchpad directory and tells Claude to stop using one that's no longer available; agent teams teammates keep the old section as well.
+- 🔴 Made side requests that fork the conversation (compaction summaries, prompt suggestions, `/btw` questions and others) in the static system-prompt mode add the session context and date when their messages don't already carry them, which they used to go without. They also get instruction files the way the main conversation now does, as a message added when theirs has none.
+- 🟢 Fixed saving settings, such as an "always allow" rule, failing with "Invalid JSON syntax in settings file" when the settings file existed but was empty or held only whitespace.
 - 🟢 Stopped Remote Control sessions from waiting for session-persistence writes after tools finish, so degraded connections no longer hold turns open.
+- 🟢 Cut background-task notifications longer than about 100,000 characters, and git's error text in worktree-creation errors longer than about 10,000, down to their start and end with a count of what was removed, so very large failure output such as git errors on a full disk no longer pushes a request over the API's size limit.
+
+<details>
+<summary>3 internal changes</summary>
+
+- 🔴 Added a warning-level log line, "task output: pin of … refused", written just before the task-directory error.
+- 🔴 Stopped the step that builds the CLAUDE.md block from reading the `tengu_paper_halyard` switch, which drops project and local CLAUDE.md files, unless a project or local file is among them; the nested CLAUDE.md lookup that runs when Claude reads a file still reads it, so a session without such files now logs an exposure for the switch only when that lookup runs.
+- 🟢 Added, for macOS only, acceptance of a write folder that the real-path lookup spells differently but that is the same folder by device and inode; on Linux this only adds a debug-log warning when such a write is refused on a system where `/proc` can't be read.
+
+</details>
+
+<details>
+<summary>1 change with no effect in this build</summary>
+
+- 🔴 Added instruction-file and recorded-prompt messages to the API test-fixture filter, but fixture recording is disabled in this build.
+
+</details>
 
 ---
 
@@ -919,6 +941,22 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
+### 2.1.209 ◆◆◆◆
+
+- 🔴 Started marking every later request to Anthropic's API with `x-is-refusal-fallback: true` once a refusal in the cyber category has moved a main-conversation request to a fallback model, also after resuming such a session and until a rewind goes back past it (before, only a silent refusal fallback did that, and only with an account-level remote switch on), and added `x-cc-fallback-latched-by`, the refused request's id, to the marking. The request re-sent on a fallback model after a refusal now also carries `x-cc-fallback-from-model`, `x-cc-fallback-category`, `x-cc-fallback-trigger` and `x-cc-original-request-id`.
+- 🔴 Changed `/upgrade` back to starting a new login when the browser can't be opened, without showing the upgrade address; 2.1.208 had made it print the address and stop.
+- 🔴 Added runtime capabilities for published Artifacts behind a remote switch that's off by default: the Artifact tool takes a `capabilities` input (today `mcp`, so the page can call the user's claude.ai connectors) and a `contract` input that pins, upgrades (`latest`) or rolls back the page's runtime version, its description and the `artifact-*` commands explain it, and a new `/artifact-capabilities` skill, which Claude is told to load before declaring any, fetches the current contract's type definitions and guidance.
+- 🟢 Let `claude agents` background sessions open the `/model` picker (saving the pick as the default for new sessions again), the Fable 5 usage-credits consent prompt, `/login`, `/upgrade`'s sign-in and Remote Control's device-enrollment sign-in, and run `/pro-trial-expired` at startup when the Pro trial has ended, undoing those parts of the background-session guard 2.1.208 added; its blocks on `/install-github-app` and the `/mcp` menu stay.
+
+<details>
+<summary>1 change with no effect in this build</summary>
+
+- 🔴 Changed an unused text-row renderer's formatter reference from an undeclared name to the React module object. Nothing in the build calls that renderer.
+
+</details>
+
+---
+
 ### 2.1.204 ◆◆◆◆
 
 - 🟢 Made headless sessions using `--output-format stream-json` with `--verbose` write events produced during startup, such as those from SessionStart hooks, as they happen instead of holding them until the session begins, so a remote worker no longer looks idle and gets shut down partway through a hook.
@@ -985,6 +1023,12 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 - 🔴 Turned on the `thinking-token-count-2026-05-13` beta for first-party requests to models with interleaved thinking, where a remote switch that's off by default used to decide, and stopped sending it through Claude Platform on AWS or Foundry; with it, Claude Code takes thinking-token counts from the API instead of estimating them from the thinking text.
 - 🟢 Changed the stalled-stream hint to appear after 20 seconds without data instead of 10, reading "Waiting for API response · will retry in …" instead of "No response from API · Retrying in …".
+
+---
+
+### 2.1.183 ◆◆◆◆
+
+- 🔴 Removed the `/migrate` command added in 2.1.182, and with it `claude migrate`: it imported MCP servers, a default permission mode, subagents, skills, slash commands and `AGENTS.md` or `GEMINI.md` instructions from OpenAI Codex and Gemini CLI configs. `/init` no longer tells Claude to offer that import when it finds those configs.
 
 ---
 
