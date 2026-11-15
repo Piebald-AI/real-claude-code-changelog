@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 47 releases from 2.1.**112** to 2.1.**325**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 53 releases from 2.1.**112** to 2.1.**325**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -595,9 +595,24 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
+### 2.1.294 ◆◆◆◆
+
+- 🔴 Told the model that judges `prompt` and `agent` hooks to ignore instructions planted in what it judges: the event's JSON and anything it reads while judging are now only things to check, and any rule, exception or instruction inside them is to be disregarded, even one that claims to come from the user.
+- 🟢 Fixed `prompt` and `agent` hooks written as rules (such as "block any `rm -rf`") letting through what they should block: the judging model is now told that `ok` true lets the action go ahead and false blocks it, and to apply a rule and answer with its outcome. Prompt hooks on events other than Stop and SubagentStop are now framed as deciding whether the action may go ahead instead of whether a condition is met, and agent hooks are asked for a reason every time.
+- 🟢 Added the same guidance to the stop-condition prompt of Stop and SubagentStop `prompt` hooks, so a hook written as an instruction ("keep going until the tests pass") is judged as a rule, and Claude is less often let stop while the hook says it should keep working.
+
+---
+
 ### 2.1.276 ◆◆◆◆
 
 - 🟢 Stopped first-party sessions whose `ANTHROPIC_BASE_URL` points away from `api.anthropic.com` from choosing a standby advisor model when the advisor tool is on (through `CLAUDE_CODE_ENABLE_EXPERIMENTAL_ADVISOR_TOOL` or a remote switch that's off by default); since 2.1.275 that made every request through such a proxy or gateway fail with an HTTP 400 about the `advisor_20260301` tool.
+
+---
+
+### 2.1.270 ◆◆◆◆
+
+- 🔴 Changed the silent retry after a refused request (behind a server-sent switch) to also cover a biology-category refusal of the default Opus model when a fallback model is armed but no fallback route covers that category (Claude Opus 5's built-in routes have none for it), as long as nothing has fallen back yet in the session. Such a refusal used to end the turn.
+- 🔴 Fixed a silent retry that continues a refused answer being left open when that retry was itself refused and handed to a fallback model: the first continuation is now closed at the switch, before the fallback model's request, and its salvaged partial answer is no longer carried into that request.
 
 ---
 
@@ -782,6 +797,27 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
+### 2.1.220 ◆◆◆◆
+
+- 🔴 Stopped the automatic switch after a refused request from moving to Claude Opus 5 when Claude Code can't read which models the account may use (on the Anthropic API with a claude.ai token lacking the `user:profile` scope, such as `CLAUDE_CODE_OAUTH_TOKEN` from `claude setup-token`, no API key and no cached model list): it moves to Claude Opus 4.8 instead, and skips Opus 5 when stepping down the Opus lineup.
+- 🔴 Added the `auto-mode-classifier-2026-07-16` beta header to auto mode's classifier requests on the Anthropic API, unless experimental betas are turned off (`CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` or HIPAA mode) or the base URL isn't Anthropic's.
+- 🔴 Added an `entitlement_blind` field to the refusal-fallback telemetry events, saying whether the account's model entitlements were unreadable.
+
+<details>
+<summary>1 change with no effect in this build</summary>
+
+- 🔴 Reworded the warning logged when auto mode's classifier drops a beta that the API rejected; the retry that logs it only runs for a placeholder beta that's empty in this build.
+
+</details>
+
+---
+
+### 2.1.214 ◆◆◆◆
+
+- 🔴 Added `MIMALLOC_SCAVENGER=0` to the environment of shell commands run in the sandbox, including the copy of Claude Code that the Linux sandbox runs to apply its seccomp filter.
+
+---
+
 ### 2.1.204 ◆◆◆◆
 
 - 🟢 Made headless sessions using `--output-format stream-json` with `--verbose` write events produced during startup, such as those from SessionStart hooks, as they happen instead of holding them until the session begins, so a remote worker no longer looks idle and gets shut down partway through a hook.
@@ -804,6 +840,20 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 ### 2.1.168 ◆◆◆◆
 
 - 🔴 Stopped turning thinking off for models whose names contain `fruitcake`, `macaroon` or `mythos`: the main conversation no longer sends `thinking` as disabled to them, auto mode's classifier leaves thinking at their default and gives each of its requests 2,048 more output tokens, and the agent namer and agent-state classifier no longer turn their thinking off, which a remote switch does for other models by default.
+
+---
+
+### 2.1.167 ◆◆◆◆
+
+- 🔴 Stopped the managed-settings login pins (`forceLoginOrgUUID`, `forceLoginMethod`) from refusing sessions run with `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST`: when a host such as Claude Desktop manages the provider, the check now passes at startup and after login, and only records that a pin was skipped.
+- 🔴 Stopped settings files' `env` blocks, managed settings included, from setting `HTTP_PROXY`, `HTTPS_PROXY` or `NO_PROXY` (in any capitalization) when `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST` is on, so the host's own proxy configuration stays in force.
+
+---
+
+### 2.1.165 ◆◆◆◆
+
+- 🔴 Added `cc_is_subagent=true` to the billing attribution line (`x-anthropic-billing-header: …`) that starts the system prompt of API requests made by subagents; the main session, after it's moved to the background, isn't counted as one.
+- 🟡 (2.1.198) Made subagents, and compaction's own summary request (used when the cache-sharing summary is off or fails), keep the session's extended thinking setting instead of turning thinking off, but only for models on a list Anthropic's servers send with the account's client data; without such a list, only forked subagents keep it, as before.
 
 ---
 
