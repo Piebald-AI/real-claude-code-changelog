@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 58 releases from 2.1.**112** to 2.1.**325**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 61 releases from 2.1.**112** to 2.1.**325**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -576,6 +576,21 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
+### 2.1.303 ◆◆◆◆
+
+- 🔴 Stopped trusting eMudhra's four emSign root certificates (emSign Root CA - G1 and - C1, emSign ECC Root CA - G3 and - C3) for Claude Code's own HTTPS connections: they, and any certificate with the same public key, are now dropped from the runtime's bundled roots, the system store and the `NODE_EXTRA_CA_CERTS` file, so a server or proxy whose chain ends at one of them fails certificate checks. When the `NODE_EXTRA_CA_CERTS` file holds one in a form that can't be parsed, Claude Code ignores that block, or the whole file when the block can't be cut out, and says so once on stderr (in the debug log instead when the interactive screen is already up).
+- 🔴 Made Claude Code trust its bundled root certificates (without the four above) when only the system certificate store is selected and every certificate it returns has expired; such a setup used to leave the runtime's default store in charge, or with `NODE_EXTRA_CA_CERTS` set, only that file's certificates.
+
+<details>
+<summary>2 changes with no effect in this build</summary>
+
+- 🔴 Changed what happens when only the system store is selected (`CLAUDE_CODE_CERT_STORE=system` or `--use-system-ca`) and the runtime has no system-certificate API: the bundled roots, minus the denied ones, are now used instead of the runtime's own default. This build's Bun runtime always provides that API, so the branch never runs.
+- 🔴 Added the error "No root certificates are left to trust", for when every root built into the runtime is on the deny list; this runtime bundles many roots that aren't on the four-entry list, so it can't appear.
+
+</details>
+
+---
+
 ### 2.1.296 ◆◇◇◇
 
 - 🔴 Added SDK `set_model` support for replacing only the custom system prompt via `only_if_model_is_current: true`, requiring a nonempty prompt and an explicit matching model, excluding hybrid mode and Remote Control.
@@ -828,6 +843,22 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
+### 2.1.215 ◆◆◆◆
+
+- 🔴 Added `CLAUDE_CODE_THISTLE_GREBE` (or a remote switch) to tone down Claude's encouragement to use subagents: set to `no_nudges` or `counter_steer`, it drops the lines in the Glob, Grep, Agent, EnterPlanMode and ExitPlanMode texts, the list of agent types and the system prompt that push Claude toward the Agent tool or teammates, and plan mode has Claude explore and design the plan itself instead of launching Explore and Plan agents; `counter_steer` also adds a "Delegating to subagents" section telling Claude to work inline and keep spawns few. The value `default`, which applies unless something sets another, leaves every text as it was, and either of the other two values is reported in telemetry.
+- 🔴 Added a switch, `CLAUDE_CODE_GAULT_KESTREL` or a remote switch that's off by default, that removes the shorter system prompt's instruction to speak up instead of proceeding when something Claude is about to delete or overwrite doesn't match how it was described or wasn't created by Claude; Claude is still told to look at the target first.
+- 🟡 (2.1.224) Added a line to the Bash tool's description for models on the shorter system prompt, telling Claude that command output is shown to it but not reliably to you, behind `CLAUDE_CODE_MARL_CORMORANT` or a remote switch that's off by default.
+- 🟢 Stopped Claude from running the bundled `/verify` and `/code-review` skills on its own; you can still start them by typing the command.
+
+<details>
+<summary>1 change with no effect in this build</summary>
+
+- 🔴 Changed an unused text-row renderer's formatter reference: it now points to an undeclared name instead of a bundled React component. Nothing in the build calls that renderer.
+
+</details>
+
+---
+
 ### 2.1.214 ◆◆◆◆
 
 - 🔴 Added `MIMALLOC_SCAVENGER=0` to the environment of shell commands run in the sandbox, including the copy of Claude Code that the Linux sandbox runs to apply its seccomp filter.
@@ -909,6 +940,15 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 - 🔴 Added `cc_is_subagent=true` to the billing attribution line (`x-anthropic-billing-header: …`) that starts the system prompt of API requests made by subagents; the main session, after it's moved to the background, isn't counted as one.
 - 🟡 (2.1.198) Made subagents, and compaction's own summary request (used when the cache-sharing summary is off or fails), keep the session's extended thinking setting instead of turning thinking off, but only for models on a list Anthropic's servers send with the account's client data; without such a list, only forked subagents keep it, as before.
+
+---
+
+### 2.1.159 ◆◆◆◆
+
+- 🔴 Added an experimental mode behind three remote switches, off by default and optionally limited by model name: one adds the narration-summaries beta (`summarize-connector-text-2026-03-13`) to first-party, Claude Platform on AWS and Foundry requests when experimental betas are allowed, though conversation turns with thinking off or in fast mode leave it out, even when the user supplies it through `ANTHROPIC_BETAS` or the SDK; one offers `SendUserMessage` outside brief mode, with a new prompt for content the user must see word for word between tool calls, without hiding Claude's other text as brief mode does; and one turns on brief mode. `CLAUDE_CODE_PEWTER_OWL=1` turns all three on and `CLAUDE_CODE_PEWTER_OWL=0` turns them off; without it they stay off in non-interactive sessions.
+- 🔴 Added the ● marker in front of messages Claude sends with `SendUserMessage` in the normal view, where they used to start after a blank indent; transcript mode already showed it.
+- 🔴 Fixed a turn's ordinary text disappearing from the normal view when Claude's `SendUserMessage` call in that turn failed: only a successful call hides it now, and when the tool isn't enabled the error tells Claude to write its message as ordinary text instead.
+- 🔴 Fixed `WaitForMcpServers` keeping its previous model's availability after a model switch while MCP servers are still connecting; it now follows whether the current model can use tool search.
 
 ---
 
