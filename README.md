@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 29 releases from 2.1.**226** to 2.1.**325**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 38 releases from 2.1.**114** to 2.1.**325**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -28,6 +28,8 @@ Tracking machinery is still a work in progress, so consistent full evaluation of
 | ◆◆◆◇ | **Complete barring a few assumptions** | We identified everything but have a few assumptions we haven't finished checking                      |
 | ◆◆◇◇ | **Most**                               | We identified _most_ (_potentially_ all) but aren't sure about the entire release                     |
 | ◆◇◇◇ | **Highlights**                         | We only identified some of the changes (usually because the release is very large and full of churn). |
+
+Every entry compares the linux-x64 build of a release with the linux-x64 build of the release before it.
 
 ## Visibility indicators
 
@@ -560,6 +562,12 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
+### 2.1.308 ◆◆◆◆
+
+- 🔴 Changed only the bundled Bun runtime, to another build that still reports version 1.4.4, with about 240 KB more machine code and changes to Bun's own built-in JavaScript; Claude Code's JavaScript and its other embedded files are identical to 2.1.307 apart from the version number, build time and commit hash.
+
+---
+
 ### 2.1.296 ◆◇◇◇
 
 - 🔴 Added SDK `set_model` support for replacing only the custom system prompt via `only_if_model_is_current: true`, requiring a nonempty prompt and an explicit matching model, excluding hybrid mode and Remote Control.
@@ -579,6 +587,12 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
+### 2.1.276 ◆◆◆◆
+
+- 🟢 Stopped first-party sessions whose `ANTHROPIC_BASE_URL` points away from `api.anthropic.com` from choosing a standby advisor model when the advisor tool is on (through `CLAUDE_CODE_ENABLE_EXPERIMENTAL_ADVISOR_TOOL` or a remote switch that's off by default); since 2.1.275 that made every request through such a proxy or gateway fail with an HTTP 400 about the `advisor_20260301` tool.
+
+---
+
 ### 2.1.267 ◆◇◇◇
 
 - 🔴 Added `session.compact` hooks to veto or rewrite non-isolated compaction, plus `$.session.compact()` for plugins to request compaction between turns in bound, non-headless sessions.
@@ -593,6 +607,12 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 - 🟢 Improved auto-mode safety review for Workflow `agent()` output schemas above 4,096 code units, up to 4,000,000, subject to a node budget, while still blocking schemas it cannot review.
 - 🟢 Added one automatic retry on a fresh connection for eligible transport failures during Artifact deploy uploads, excluding user aborts, started responses and ambiguous or near-complete uploads.
 - 🟢 Made usage-limit warnings reuse valid, unretired readings from the past 30 minutes when an allowed response omits them (remotely controlled, on by default).
+
+---
+
+### 2.1.266 ◆◆◆◆
+
+- 🟢 Stopped `CLAUDE_CODE_USE_GATEWAY` alone from routing requests to the Cloud gateway, which since 2.1.265 had made every request fail with "Not signed in to the Cloud gateway" in proxy and LLM-gateway setups that set it; the sign-in error also stops suggesting the variable.
 
 ---
 
@@ -713,7 +733,7 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
-### 2.1.243 ◆◆◆◇
+### 2.1.243 ◆◆◆◆
 
 - 🔴 Changed the LSP tool gate to default on instead of requiring an environment-variable opt-in
 
@@ -729,6 +749,43 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
+### 2.1.231 ◆◆◆◆
+
+- 🟢 Changed the redirect address MCP OAuth sign-in sends from `http://127.0.0.1:<port>/callback` to `http://localhost:<port>/callback`, fixing redirect mismatches with servers whose pre-registered OAuth client expects `localhost`.
+
+---
+
 ### 2.1.226 ◆◆◆◆
 
 - 🔴 Changed only file and product version resources on Windows, with no substantive JavaScript changes and identical bundled prompts across all five clients
+
+---
+
+### 2.1.201 ◆◆◆◆
+
+- 🟢 Stopped Claude Sonnet 5 sessions from sending Claude Code's reminders as system messages in the middle of the conversation; they stay inside user turns and the `mid-conversation-system-2026-04-07` beta isn't requested, unless `CLAUDE_CODE_FORCE_MID_CONVERSATION_SYSTEM` is set or, on Bedrock, Vertex, Foundry or Mantle, the model's `…_SUPPORTED_CAPABILITIES` variable lists `mid_conversation_system`.
+
+---
+
+### 2.1.185 ◆◆◆◆
+
+- 🔴 Turned on the `thinking-token-count-2026-05-13` beta for first-party requests to models with interleaved thinking, where a remote switch that's off by default used to decide, and stopped sending it through Anthropic on AWS or Foundry; with it, Claude Code takes thinking-token counts from the API instead of estimating them from the thinking text.
+- 🟢 Changed the stalled-stream hint to appear after 20 seconds without data instead of 10, reading "Waiting for API response · will retry in …" instead of "No response from API · Retrying in …".
+
+---
+
+### 2.1.148 ◆◆◆◆
+
+- 🟢 Fixed Bash tool commands failing with exit code 127 for some users since 2.1.147: the shell snapshot again leaves out shell functions whose names start with a single underscore (two underscores are still kept), which also undoes 2.1.147's fix for aliases that call such functions.
+
+---
+
+### 2.1.137 ◆◆◆◆
+
+- 🔴 Changed nothing but the version number, build time and commit hash recorded in the build; the JavaScript, the other embedded files and the Bun runtime are identical to 2.1.136.
+
+---
+
+### 2.1.114 ◆◆◆◆
+
+- 🟢 Fixed tool permission dialogs crashing when the request came from outside the local session: from an agent teams teammate, or from a remote, direct-connect or SSH session. The crash came with 2.1.111.
