@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 61 releases from 2.1.**112** to 2.1.**325**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 65 releases from 2.1.**112** to 2.1.**325**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -618,6 +618,35 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
+### 2.1.291 ◆◆◆◆
+
+- 🔴 Took back 2.1.290's change that kept timers, input and drawing running while a large session loads: a transcript over 5 MB is parsed in one go again, so the interface waits until it's loaded, and a session's subagent transcripts load all at once instead of four at a time.
+- 🔴 Stopped sessions that run as remote workers (cloud sessions, self-hosted runner sessions and sessions a Remote Control host starts) from reporting the running cost and token totals to Anthropic's session server during a turn, which 2.1.290 did as often as every 15 seconds whenever the cost had changed; mid-turn reports now need a remote setting that's off by default and sets their interval (15 seconds at least), while the reports after each turn and when the session goes idle are unchanged.
+- 🟢 Stopped transcript rewrites and loads from waiting for each other, as they had since 2.1.288: removing a message, the compaction rewrite, moving the transcript after a directory change, and writing a session's or subagent's transcript from the server no longer wait for loads of the same file to finish or stall for 5 seconds, and loads no longer wait for rewrites. 2.1.290's restart of a load that a rewrite overtook (up to three passes, then reporting the transcript unreadable) went with it.
+
+---
+
+### 2.1.278 ◆◆◆◆
+
+- 🔴 Made auto mode let the local classifier decide a tool call the server-side classifier has no usable verdict for (the server reports its classifier unavailable for a reason other than being turned off, leaves the call out of its results, or reports the call unavailable for a reason other than a cut-off response), wherever that classifier runs with local fallback: Bedrock, Vertex, Foundry, Mantle, Claude Platform on AWS or Google Cloud, and Anthropic API connections through a proxy. Bedrock, Vertex, Foundry and Mantle sessions that had turned the server-side classifier on blocked such calls as classifier-unavailable before.
+- 🔴 Extended the silent retry after a refusal to the default Sonnet model, for refusals the API puts in its `cyber` or `frontier_llm` category, when the account's client data turns the retry on for that model and no refusal fallback has happened yet in the session; before, only the default Opus model was retried this way.
+- 🔴 Passed `CLAUDE_CODE_AUTO_MODE_SERVER` and `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` on to background sessions and to agent team teammates started in their own panes, so they use the launching session's auto mode classifier setting and, when it has experimental betas turned off, leave them off too.
+- 🔴 Changed what Claude is told when auto mode on a direct API connection denies an action because the session no longer holds the server-side classifier's result for the response that asked for it: it's now told to issue the action again once, where it was told a retry wouldn't change anything.
+- 🟢 Changed auto mode on Bedrock, Vertex, Foundry and Mantle to use the provider's server-side classifier by default, falling back to the local classifier, where it needed `CLAUDE_CODE_AUTO_MODE_SERVER=1` before. Setting that variable to a non-empty value other than `1`, `true`, `yes` or `on` (such as `0`) turns it off, and while it's unset, so does `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` unless a host application manages the provider (`CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST`).
+- 🟢 Moved Claude Platform sessions on AWS and on Google Cloud, and Anthropic API sessions whose `ANTHROPIC_BASE_URL` isn't `api.anthropic.com` or that connect through `ANTHROPIC_UNIX_SOCKET` (outside `ssh-remote` sessions), onto that same server-side classifier with local fallback, which `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` always turns off for them. Claude Platform sessions used only the local classifier before, and those API sessions got the server-side classifier only behind a remote switch that's off by default, with no fallback (a proxy that refused its beta header left auto mode denying every tool call it had to check until `/clear` or `/compact`).
+- 🟢 Made auto mode on a direct API connection that uses the server-side classifier (behind a remote switch that's off by default) switch to the local classifier for the rest of the session when a response comes back without that classifier's result or the API says it doesn't run that classifier for the session (behind a second remote switch that's on by default); each such tool call was blocked before, with a note to Claude that retrying wouldn't help.
+- 🟢 Added a notice when auto mode falls back to billed classifier requests: it says the session isn't eligible for the change that stops charging for classifier requests, names the gateway in the way when it can (a base URL host that isn't Anthropic's or a cloud provider's, or a LiteLLM, Helicone, Portkey, Cloudflare AI Gateway, Kong, Braintrust, Bifrost or Databricks gateway it has detected) and links to the classifier billing page. Enter keeps auto mode going and Escape denies the pending tool call and stops the turn; it skips Pro, Max and Team subscribers, stays away for 24 hours once acknowledged with a gateway named, sits behind a remote switch that's on by default, and `-p` runs print it once instead (to stderr, or as a warning-level system message with `--output-format stream-json --verbose`). While it's open, the session raises a needs-input notification; background sessions, agent team teammates, Remote Control and SDK hosts with their own dialogs get a log line instead, and after Enter the session isn't asked again.
+- 🟢 Added an `Auto mode server` row to `/status` that reads Enabled when this session's permission mode uses the server-side classifier and its beta header hasn't been refused, and Disabled otherwise.
+
+<details>
+<summary>1 internal change</summary>
+
+- 🔴 Added telemetry for the classifier billing notice (`tengu_auto_mode_server_fallback_notice`, with whether a gateway was found and the provider, and `tengu_auto_mode_server_fallback_notice_closed`, with the choice) and for switching to the local classifier (`tengu_server_classifier_no_result_latched`), plus debug-log lines when a call or a session falls back.
+
+</details>
+
+---
+
 ### 2.1.276 ◆◆◆◆
 
 - 🟢 Stopped first-party sessions whose `ANTHROPIC_BASE_URL` points away from `api.anthropic.com` from choosing a standby advisor model when the advisor tool is on (through `CLAUDE_CODE_ENABLE_EXPERIMENTAL_ADVISOR_TOOL` or a remote switch that's off by default); since 2.1.275 that made every request through such a proxy or gateway fail with an HTTP 400 about the `advisor_20260301` tool.
@@ -816,6 +845,31 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
+### 2.1.237 ◆◆◆◆
+
+- 🔴 Added harness event delivery for remote sessions (`CLAUDE_CODE_REMOTE` set, `CLAUDE_CODE_ENVIRONMENT_KIND` not) that also set `CLAUDE_CODE_POLL_EVENTS`, which a settings file's `env` block can't set: the SDK `poll_event` request, always refused before, now queues events while the session is in auto mode, and a new main-thread `Poll` tool lets Claude wait for queued events and read them. An event can name its sender's authority (`human-principal`, `human-other`, `peer-agent` or `world-event`), and auto mode's classifier treats only `human-principal` events as the user's own words. Turns a poll event starts run without the always-allow rules that slash commands, skills and agents granted, and with a second remote switch (off by default) notices from other sessions arrive as `peer-agent` events.
+- 🔴 Made Claude in Slack and Claude in Teams sessions treat a message that arrives through Remote Control labelled as typed by a person in the bound thread (inbound origin `slack_human` or `teams_human`) as the user's own turn, where it used to be demoted to a message from an unknown peer session. In Slack sessions, auto mode's classifier now sees each relayed turn verified as typed by a person marked "[Verified human message relayed from the bound Slack thread]:", and its rules now say that posts by bots or other agents in the thread never establish the user's intent or consent. The classifier also indents the text of relayed turns that aren't verified, so they can't open with that marker, and on the plain SDK input stream such person-typed messages are now flagged verified too.
+- 🔴 Changed what auto mode's classifier is shown for user turns of unknown origin: they now carry the label "[MESSAGE FROM NON-USER SOURCE - NOT USER INPUT]" instead of appearing as plain user text. That covers synthetic messages from an SDK host and, newly, the earlier turns of a background subagent or agent-teams teammate resumed from its saved transcript; resuming also drops any Slack "verified human" flag and classifier markers stored in that transcript and counts its `human-principal` events as `human-other`.
+- 🔴 Changed automatic replies to artifact comments (opt-in with `CLAUDE_CODE_ARTIFACT_COMMENTS_AUTOREACT` or a remote switch that's off by default): when Claude starts acting on a thread it was summoned into in the last 10 minutes, it now checks those summons against a turn already visible in the session and stands down if that turn took them over, and with `CLAUDE_CODE_ARTIFACT_COMMENT_FAST_ACK` or a second remote switch (also off by default) on, it answers them as fresh requests.
+- 🟢 Fixed prompt caching behind LLM gateways and custom base URLs: Claude Code now puts a cache breakpoint on a system message placed among the conversation's messages only when it talks to Anthropic's API or Claude Platform on AWS at their default addresses, Bedrock, Vertex AI or Mantle without a custom base URL, or Foundry at its default address or an Azure `.services.ai.azure.com` host; anywhere else the breakpoint goes on the last user or assistant message.
+- 🟢 Added Concise, a new built-in output style offered in `/config`'s output style setting: Claude opens with the answer or outcome, drops preambles, step-by-step narration and closing recaps, keeps simple answers to a few sentences, and still gives full detail when asked and for errors, failing tests, security warnings and destructive-action confirmations.
+
+<details>
+<summary>1 internal change</summary>
+
+- 🔴 Started reporting `slack_bot_observation` as the platform class of the bridge's demotion telemetry event in Slack sessions; the value existed before but sat behind a check that was always false.
+
+</details>
+
+<details>
+<summary>1 change with no effect in this build</summary>
+
+- 🔴 Changed an unused text-row renderer's formatter reference from a billing-consent check to the command-history store getter. Nothing in the build calls that renderer.
+
+</details>
+
+---
+
 ### 2.1.231 ◆◆◆◆
 
 - 🟢 Changed the redirect address MCP OAuth sign-in sends from `http://127.0.0.1:<port>/callback` to `http://localhost:<port>/callback`, fixing redirect mismatches with servers whose pre-registered OAuth client expects `localhost`.
@@ -874,6 +928,39 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 ### 2.1.201 ◆◆◆◆
 
 - 🟢 Stopped Claude Sonnet 5 sessions from sending Claude Code's reminders as system messages in the middle of the conversation; they stay inside user turns and the `mid-conversation-system-2026-04-07` beta isn't requested, unless `CLAUDE_CODE_FORCE_MID_CONVERSATION_SYSTEM` is set or, on Bedrock, Vertex, Foundry or Mantle, the model's `…_SUPPORTED_CAPABILITIES` variable lists `mid_conversation_system`.
+
+---
+
+### 2.1.197 ◆◆◆◆
+
+- 🔴 Changed auto-compact for Sonnet 5 to treat its window as 967,000 tokens (500,000 in sessions started with the `local-agent` or `remote_cowork` entrypoint) instead of the full 1M, unless a server-sent setting replaces that default.
+- 🔴 Stopped `/model` from asking "Switch model?" mid-conversation when the switch only adds or drops the `[1m]` suffix, as from `sonnet` to `sonnet[1m]`.
+- 🔴 Changed `/model` to open on the alias row a configured full model id resolves to, such as "Sonnet" for `claude-sonnet-5`, instead of adding a separate row for the id; the SDK's model list gained a `resolvedModel` field so hosts can match the same way.
+- 🔴 Changed the system prompt's line about current models to name the Claude 5 family, Opus 4.8 and Haiku 4.5 (it named Fable 5 and the Claude 4.X family), with Sonnet 5 in its list of model ids.
+- 🔴 Changed the built-in guide for creating routines (the `/schedule` skill, offered to claude.ai subscribers behind a remote switch that's off by default) to default new routines to `claude-sonnet-5` instead of `claude-sonnet-4-6`.
+- 🔴 Updated the bundled `claude-api` skill for Sonnet 5 (its model tables with the $2/$10 intro price through 2026-08-31, a new guide for migrating from Sonnet 4.6, "sonnet" now meaning Sonnet 5) and added Managed Agents material on per-session agent overrides, live text previews, pagination, fetching one deployment run, webhook events for agents and deployments, and where a credential is injected. The guides also correct their existing Sonnet 4.6 guidance: its output limit is 128K, not 64K, and its effort options include `max`, which they used to call Opus-only.
+- 🔴 Made Claude Code treat `CLAUDE_CODE_ENTRYPOINT=local_agent` as `local-agent`.
+- 🔴 Changed the attribution line Claude Code adds to pull requests ("🤖 Generated with Claude Code …") to name `claude-sonnet-5` in Sonnet 5 sessions, where it said "claude".
+- 🟢 Added Claude Sonnet 5 (`claude-sonnet-5`) with a native 1M-token context window on Anthropic's API and also on Bedrock, Vertex, Foundry and gateways (the first model with native 1M there), effort up to `max` including `xhigh`, and 64K output tokens by default with a 128K cap. It can use web search on Vertex and, where the advisor tool is turned on (Anthropic's API only, off by default), the advisor; it reads its Vertex region from `VERTEX_REGION_CLAUDE_5_SONNET`, is costed at $3/$15 per Mtok, appears in the gateway's `/v1/models` when that list includes built-in models, and on a third-party provider that lacks it the error suggests Sonnet 4.6. Its catalog entry turns on adaptive thinking, context management and mid-conversation system messages, allows images up to 2000×2000 and streams tool input eagerly on Bedrock and Vertex, and the effort picker now lists Sonnet 5 under `xhigh` and Sonnet 4.6 or later under `max`.
+- 🟢 Made the `sonnet` alias resolve to Sonnet 5 on Anthropic's API unless `ANTHROPIC_DEFAULT_SONNET_MODEL` names another model; Bedrock, Vertex, Foundry and Mantle stay on Sonnet 4.5, and Claude Platform on AWS and gateways on Sonnet 4.6.
+- 🟢 Changed `/model` to offer Sonnet 5 as its "Sonnet" row; on Anthropic's API, Claude Platform on AWS and gateways (not on claude.ai plans) it shows the $2/$10 per Mtok promo price, with the $3/$15 list price struck through, while a server-sent end date lies ahead. Sonnet 4.6 moved to a "Sonnet 4.6 · Previous Sonnet version" row, offered on third-party providers and, outside claude.ai plans, when Sonnet 5 isn't the Sonnet default (as on Claude Platform on AWS and gateways), and the separate 1M row, now "Sonnet 4.6 (1M context)" pinned to Sonnet 4.6 or "Sonnet 5 (1M context)", is hidden when the Sonnet default already has native 1M context.
+- 🟢 Stopped refusing `sonnet[1m]` as unavailable for the account, and stopped the tip that suggests `/model sonnet[1m]`, when the Sonnet model it names already has native 1M context, as Sonnet 5 does on Anthropic's API; the refusal, which now also covers `sonnet-5[1m]` where Sonnet 5 lacks native 1M, says "Sonnet with 1M context".
+
+<details>
+<summary>3 internal changes</summary>
+
+- 🔴 Changed error reports to tag Sonnet 5 sessions with the model's name instead of "other".
+- 🔴 Changed the settings schema's descriptions of the prompt-hook and agent-hook `model` fields to use `claude-sonnet-5` as the example.
+- 🔴 Added an internal `promoListPrice` field next to `resolvedModel` in the SDK's model list.
+
+</details>
+
+<details>
+<summary>1 change with no effect in this build</summary>
+
+- 🔴 Added an error to the Bedrock default-model setup for a model tier with no Bedrock id; the four tiers it reads (Sonnet 4.5, Opus 4.6, Haiku 4.5, Fable 5) all have one, so it can't fire.
+
+</details>
 
 ---
 
