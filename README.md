@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 38 releases from 2.1.**114** to 2.1.**325**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 47 releases from 2.1.**112** to 2.1.**325**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -568,6 +568,14 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
+### 2.1.306 ◆◆◆◆
+
+- 🔴 Made the retry that drops the thinking display-updates beta header after an HTTP 400 or 422 go ahead, logging the error, when checking for a direct Anthropic API connection fails, where it used to give up.
+- 🟢 Made Claude Code read a cloud session's handed-off login files (`.oauth_token`, `.api_key`, `.session_ingress_token`) even without `CLAUDE_CODE_REMOTE`, so a `claude -p` launched in the session without its environment variables is no longer "Not logged in".
+- 🟢 Stopped an unrelated HTTP 400 or 422 from Anthropic's API making Claude Code resend the request with every tool loaded, which with many MCP tools ended in "prompt is too long" and a needless compaction; on direct connections, except sessions signed in through an Anthropic profile or workload identity federation with no API key, only an error that mentions `defer_loading` triggers that resend now.
+
+---
+
 ### 2.1.296 ◆◇◇◇
 
 - 🔴 Added SDK `set_model` support for replacing only the custom system prompt via `only_if_model_is_current: true`, requiring a nonempty prompt and an explicit matching model, excluding hybrid mode and Remote Control.
@@ -733,6 +741,19 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
+### 2.1.245 ◆◆◆◆
+
+- 🟢 Updated the bundled Bun runtime to another build of version 1.4.0, which stopped exporting its own `malloc` family under glibc's symbol versions and no longer crashes at startup on systems with glibc 2.44. Its machine code grew by about 150 KB; Bun lost its `bun prune` and `bun dedupe` commands and `bun audit fix`, gained a `bun feedback` command with a `BUN_FEEDBACK_URL` variable, and changed its built-in JavaScript for streams, `bun:sqlite` and sockets, and its shell completions.
+
+<details>
+<summary>1 change with no effect in this build</summary>
+
+- 🔴 Added a plain-text handler for `/autofix-pr` that hands its arguments to the autofix runner and replies "Autofix PR cancelled" when stopped, in a module nothing in the build loads; the command still opens its interactive screen.
+
+</details>
+
+---
+
 ### 2.1.243 ◆◆◆◆
 
 - 🔴 Changed the LSP tool gate to default on instead of requiring an environment-variable opt-in
@@ -761,6 +782,12 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
+### 2.1.204 ◆◆◆◆
+
+- 🟢 Made headless sessions using `--output-format stream-json` with `--verbose` write events produced during startup, such as those from SessionStart hooks, as they happen instead of holding them until the session begins, so a remote worker no longer looks idle and gets shut down partway through a hook.
+
+---
+
 ### 2.1.201 ◆◆◆◆
 
 - 🟢 Stopped Claude Sonnet 5 sessions from sending Claude Code's reminders as system messages in the middle of the conversation; they stay inside user turns and the `mid-conversation-system-2026-04-07` beta isn't requested, unless `CLAUDE_CODE_FORCE_MID_CONVERSATION_SYSTEM` is set or, on Bedrock, Vertex, Foundry or Mantle, the model's `…_SUPPORTED_CAPABILITIES` variable lists `mid_conversation_system`.
@@ -769,8 +796,34 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ### 2.1.185 ◆◆◆◆
 
-- 🔴 Turned on the `thinking-token-count-2026-05-13` beta for first-party requests to models with interleaved thinking, where a remote switch that's off by default used to decide, and stopped sending it through Anthropic on AWS or Foundry; with it, Claude Code takes thinking-token counts from the API instead of estimating them from the thinking text.
+- 🔴 Turned on the `thinking-token-count-2026-05-13` beta for first-party requests to models with interleaved thinking, where a remote switch that's off by default used to decide, and stopped sending it through Claude Platform on AWS or Foundry; with it, Claude Code takes thinking-token counts from the API instead of estimating them from the thinking text.
 - 🟢 Changed the stalled-stream hint to appear after 20 seconds without data instead of 10, reading "Waiting for API response · will retry in …" instead of "No response from API · Retrying in …".
+
+---
+
+### 2.1.168 ◆◆◆◆
+
+- 🔴 Stopped turning thinking off for models whose names contain `fruitcake`, `macaroon` or `mythos`: the main conversation no longer sends `thinking` as disabled to them, auto mode's classifier leaves thinking at their default and gives each of its requests 2,048 more output tokens, and the agent namer and agent-state classifier no longer turn their thinking off, which a remote switch does for other models by default.
+
+---
+
+### 2.1.156 ◆◆◆◆
+
+- 🟢 Stopped moving tool calls behind a later thinking block when a reply interleaves thinking with tool use, which made the API reject the conversation for modified thinking blocks; Claude Code now leaves such replies in order (and records the skip in telemetry), and its strip-and-retry recovery also recognises those errors when they mention `thinking` or `redacted_thinking`.
+
+---
+
+### 2.1.150 ◆◆◆◆
+
+- 🔴 Added a system-prompt section whose text comes from Anthropic's servers, taken from the `tengu_heron_brook` value in the server-supplied client data or from a remote setting of the same name; it adds nothing unless the server sends text.
+
+<details>
+<summary>2 changes with no effect in this build</summary>
+
+- 🔴 Removed the `ant_model_override` system-prompt section, which never produced any text in this build.
+- 🔴 Removed an unused function that always returned false.
+
+</details>
 
 ---
 
@@ -780,12 +833,31 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
+### 2.1.138 ◆◆◆◆
+
+- 🟡 (2.1.212) Made `CLAUDE_CODE_MID_CONVERSATION_SYSTEM`, set to part of a model's name, work behind a custom `ANTHROPIC_BASE_URL`: when it's set, sending Claude Code's reminders as mid-conversation system messages no longer requires requests to go to `api.anthropic.com`.
+
+---
+
 ### 2.1.137 ◆◆◆◆
 
 - 🔴 Changed nothing but the version number, build time and commit hash recorded in the build; the JavaScript, the other embedded files and the Bun runtime are identical to 2.1.136.
 
 ---
 
+### 2.1.123 ◆◆◆◆
+
+- 🟢 Stopped `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` from stripping the `oauth-2025-04-20` header on first-party, Claude Platform on AWS and Foundry connections, which made claude.ai logins fail with repeated 401s; with the variable set, those connections no longer trim the beta headers they send to the variable's short list, so anything named in `ANTHROPIC_BETAS` goes out too.
+
+---
+
 ### 2.1.114 ◆◆◆◆
 
 - 🟢 Fixed tool permission dialogs crashing when the request came from outside the local session: from an agent teams teammate, or from a remote, direct-connect or SSH session. The crash came with 2.1.111.
+
+---
+
+### 2.1.112 ◆◆◆◆
+
+- 🔴 Stopped sending `temperature` to Claude Opus 4.7 on requests made with thinking off, since that model rejects the parameter: the main conversation with thinking turned off, subagents (which run without thinking unless forked) and compaction's fallback summary; other models still get the configured override or the default of 1.
+- 🟢 Fixed auto mode's permission classifier failing on Claude Opus 4.7: its `temperature` of 0 is no longer sent to that model.
