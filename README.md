@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 53 releases from 2.1.**112** to 2.1.**325**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 58 releases from 2.1.**112** to 2.1.**325**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -639,11 +639,21 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
-### 2.1.263 ◆◆◆◇
+### 2.1.263 ◆◆◆◆
 
-- 🔴 Added effort-reduction prompts for Fable 5.1 at `high`, `xhigh` or `max`, with remotely configured targets and confirmation before saving defaults; switching is blocked during ultracode.
-- 🔴 Added experimental `CLAUDE_CODE_POLISHED_DEWDROP` for eligible first-party requests: `drop` asks to discard mismatched thinking blocks, `block` requests an error, and `off` leaves the policy unset.
-- 🔴 Added HTTP 400 fallback for an unsupported thinking-binding beta or extra `block_binding` inputs when binding is active and its beta is prepared; generated values stay omitted until reset or unlatch, but explicit betas can still be sent.
+- 🔴 Extended the effort-reduction prompt, which offers to lower your default effort and covered only Opus 5 at `high`, to Fable 5.1 at `high`, `xhigh` or `max`; it still appears only when Anthropic serves its text remotely, and that text now picks which of those levels it applies to (only `high` unless it lists more), the lower level to offer and an optional warning line, and can name the model and both levels in its title and buttons. Each model's prompt is answered separately, ultracode sessions aren't offered it, and accepting changes nothing if the model or effort level changed after it appeared.
+- 🔴 Stopped leaving sessions with Remote Control on out of the effort-reduction prompt, so Opus 5's existing prompt and the new Fable 5.1 one can now be shown and accepted there.
+- 🔴 Stopped offering or accepting the effort-reduction prompt on custom model names that count as Opus 5 only through a `behavesAs` mapping (a `modelPicker` row in settings or the model list Anthropic serves) or through the discovered backing model of a Bedrock application inference profile; names mapped with `modelOverrides` still qualify. The Bedrock case only reaches sessions with `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST` set, since other Bedrock sessions never receive the prompt's text.
+- 🔴 Added thinking-binding controls to requests sent to Anthropic's API with thinking on, behind a remote switch that's off by default, which `CLAUDE_CODE_POLISHED_DEWDROP` overrides: `drop` asks the API to drop thinking blocks that don't match the conversation, `block` asks it to return an error instead, and `off` turns the controls off. Sessions that authenticate through workload identity federation or a profile in the Anthropic config directory instead of an API key don't send them, and neither do sessions with `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` set.
+- 🔴 Added a retry for when Anthropic's API rejects the thinking-binding beta or its `block_binding` field with HTTP 400: Claude Code stops sending both for the rest of the conversation and sends the request again.
+
+<details>
+<summary>2 internal changes</summary>
+
+- 🔴 Added the thinking mismatch behaviour each request carried (`drop_block` or `error`) to API request and success telemetry.
+- 🔴 Added the model, offered effort levels and whether a warning was shown to effort-reduction prompt telemetry.
+
+</details>
 
 ---
 
@@ -775,13 +785,19 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
-### 2.1.241 ◆◆◆◇
+### 2.1.241 ◆◆◆◆
 
-- 🔴 Added the effective Sable Thrush feature gate to `experiment_gates` notifications sent to the VS Code extension
-- 🔴 Changed non-interactive sessions, including SDK and `-p`, to allow thinking narration and connector text unless display is explicitly omitted
-- 🔴 Changed narration signature decoding to use `atob` and `Uint8Array` instead of `Buffer`, returning cleanly on malformed base64
-- 🔴 Removed internal narration exports `NARRATION_SUMMARY_LABEL` and `getSignatureBlockKind`
+- 🔴 Added the effective Sable Thrush feature gate to `experiment_gates` notifications sent to the VS Code extension; the session reads the gate when the extension connects and keeps that value until it ends
+- 🔴 Changed non-interactive sessions, including SDK and `-p`, to ask the API for thinking narration and connector text under the same rules as interactive sessions, where before they never did; those rules still need the Sable Thrush remote switch, which is off by default, and thinking display updates (`CLAUDE_CODE_THINKING_DISPLAY_UPDATES`, a model capability or a remote switch)
+- 🔴 Changed narration signature decoding to use `atob` and `Uint8Array` instead of `Buffer`, so a signature that isn't valid base64 is now rejected as not narration instead of being decoded loosely
 - 🔴 Changed SDK documentation to clarify that `null` restores Claude Code's own thinking-display handling
+
+<details>
+<summary>1 change with no effect in this build</summary>
+
+- 🔴 Removed the internal narration exports `NARRATION_SUMMARY_LABEL` and `getSignatureBlockKind`; nothing in the build read them, and the label and the decoder are still used directly
+
+</details>
 
 ---
 
@@ -830,10 +846,49 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
+### 2.1.190 ◆◆◆◆
+
+- 🔴 Added support for a weekly Fable 5 limit (`seven_day_overage_included`, read from rate-limit headers including the new `anthropic-ratelimit-unified-7d_oi-*` ones, and added to the SDK's rate-limit types): warnings and refusals call it the "Fable 5 limit". When a plan's included Fable 5 usage runs out mid-session, the usage-credits prompt reads "You've reached your Fable 5 limit" and explains that continuing on Fable 5 uses usage credits.
+- 🔴 Treated Enterprise seats, and any plan type named in the remote list `tengu_saffron_credits_only_tiers` (Enterprise by default), as plans where Fable 5 always uses usage credits: they can pick Fable 5 in `/model` and keep it as their default without the usage-credits consent prompt, and the confirmation after switching to it adds " · Draws from usage credits".
+- 🔴 Started saving Fable 5 usage-credits consent under a new key (`fableOverageConsentV2`), so consent given in an earlier version no longer counts and Claude Code asks again.
+- 🔴 Changed the Fable option descriptions in the `/model` picker to say " · Requires usage credits" when the account needs usage credits for Fable 5 and nothing otherwise, dropping " · Draws from usage credits", " · Included with your plan until <date>" and " · Uses your limits ~2× faster than Opus".
+- 🔴 Stopped greying out Fable in `/model` (labelled "Fable (disabled)", with "contact your admin to turn on usage credits" added to its description) for Team members without billing access when Fable 5 needed usage credits their organization had turned off. The greyed-out row now sits behind a remote switch that's off by default; when on, it isn't limited to Team plans and says the model requires usage credits instead of pointing to an admin.
+- 🔴 Changed Fable 5 usage-credit messages for members who can't manage billing: instead of pointing them to an admin, to `/usage-credits` or to buying more, they now say only to switch models ("/model to switch models.", "Switch models to keep working."). Refusals that opened with "You've reached your Fable 5 limit." now say that only for the weekly limit and otherwise open with "Fable 5 requires usage credits.", and when the organization's usage credits are off they tell people who can manage billing to run `/usage-credits` instead of asking an admin.
+- 🔴 Changed how a Fable 5 request refused for usage credits is handled: Claude Code recognizes it by the API's `credits_required` error code (or the weekly Fable 5 limit) instead of by the error text, and no longer opens the rate-limit options menu on its own, shows the suggestion line under the notice (such as "/upgrade to increase your usage limit." or a `/usage-credits` hint), or puts the consent prompt in front of the next Fable 5 request.
+- 🔴 Made turning on or buying usage credits in the usage-credits dialog count as consent to use them for Fable 5 when the session is on Fable 5 and the account needs credits for it, so the consent prompt doesn't follow.
+- 🔴 Changed startup announcements: one can now be limited to people who can use a given model (`requiresModel`), the text renders as Markdown instead of picking out slash commands in colour, and the top announcement is sent to the VS Code extension (`startup_announcement`).
+- 🔴 Added `model_scoped` to `rate_limits` in the SDK `get_usage` reply: per-model weekly limits (name, utilization, reset time) taken from the server's limits for the models on a remote allowlist.
+- 🔴 Changed the usage-credit balance lookup to treat a reply without an amount as an unknown balance, so the Fable 5 usage-credits prompt no longer shows such accounts a zero balance when their usage credits are on, and the usage-credits screen shows their balance as "—" instead of "$NaN".
+- 🔴 Added an `enabled` field to the remote Fable usage-credits config (`tengu_saffron_lattice`); when it's `false`, the config no longer marks Fable 5 as needing usage credits.
+
+---
+
 ### 2.1.185 ◆◆◆◆
 
 - 🔴 Turned on the `thinking-token-count-2026-05-13` beta for first-party requests to models with interleaved thinking, where a remote switch that's off by default used to decide, and stopped sending it through Claude Platform on AWS or Foundry; with it, Claude Code takes thinking-token counts from the API instead of estimating them from the thinking text.
 - 🟢 Changed the stalled-stream hint to appear after 20 seconds without data instead of 10, reading "Waiting for API response · will retry in …" instead of "No response from API · Retrying in …".
+
+---
+
+### 2.1.177 ◆◆◆◆
+
+- 🔴 Added a remote per-model block: when Anthropic's server-side config gives a model a block message, most requests to it, including the conversation's and subagents', stop before reaching the API and show that message as a rate-limit error, and `/model` lists the model as disabled with the config's hint. The config is empty by default.
+- 🔴 Limited the "Meet Fable 5" startup announcement ("Fable 5 is here!" when you're already on it) to the Anthropic API, so users of other providers who have Fable set up no longer see it, and stopped showing it when its remote switch has no value, which used to let it show.
+
+---
+
+### 2.1.173 ◆◆◆◆
+
+- 🔴 Changed the notices shown when a model's safety measures stop a response (the "Switched to …" notice, the prompt offering another model, and the "can't respond to this request" message) to mention cybersecurity or biology topics only when the API reports one of those categories. Other refusals, and the notice shown when the server itself switches models, now say the model's measures flagged something in the session, which sometimes happens with safe, normal conversations.
+- 🔴 Changed refusal analytics events to report a refusal's category only as `cyber`, `bio` or `other`; they used to send the API's category name as it came, except that a refusal whose offered model switch wasn't taken reported only `cyber` or `bio`.
+- 🟢 Fixed Fable model names with a `[1m]` tag keeping it on the Anthropic API, where Fable 5 already has a 1M context window: `fable[1m]`, a full Fable model name with `[1m]`, and an `ANTHROPIC_DEFAULT_FABLE_MODEL` ending in `[1m]` now resolve without the tag, so the 1M-context beta header isn't sent. Other providers and a custom `ANTHROPIC_BASE_URL` keep the tag.
+
+<details>
+<summary>1 change with no effect in this build</summary>
+
+- 🟢 Stopped treating Windows as a platform the Bash sandbox supports, which ends the sandbox dependency warning there; this Linux build's platform check can only report Linux, WSL or unknown, so the new Windows test is never true here.
+
+</details>
 
 ---
 
@@ -854,6 +909,15 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 - 🔴 Added `cc_is_subagent=true` to the billing attribution line (`x-anthropic-billing-header: …`) that starts the system prompt of API requests made by subagents; the main session, after it's moved to the background, isn't counted as one.
 - 🟡 (2.1.198) Made subagents, and compaction's own summary request (used when the cache-sharing summary is off or fails), keep the session's extended thinking setting instead of turning thinking off, but only for models on a list Anthropic's servers send with the account's client data; without such a list, only forked subagents keep it, as before.
+
+---
+
+### 2.1.158 ◆◆◆◆
+
+- 🔴 Extended the automatic retry after a safety-filter refusal, which a server-side setting turns on for the default Opus model, to sessions using that model with a `[1m]` or `[2m]` context tag; the message is resent on the same model, tag kept, marked with the `x-is-refusal-fallback` header.
+- 🔴 Fixed the warning that auto mode can't be used ("auto mode disabled by settings", "auto mode is unavailable for your plan" or "auto mode unavailable for this model") waiting unseen in the notification queue until something else made the notification area check it, when it came from the startup check or the re-check after a model or fast mode change; it now shows as soon as the notification area is free, and a second copy isn't queued.
+- 🔴 Stopped sending the first word of each command in the Bash tool's analytics events for finished and failed commands; they now report one of 22 common command names (such as `npm`, `python`, `docker` or `curl`) or "other", as the other Bash events already did.
+- 🟢 Made auto mode available on Bedrock, Mantle, Vertex, Foundry and gateway providers when `CLAUDE_CODE_ENABLE_AUTO_MODE` is set, for Opus 4.7, Opus 4.8 and model names Claude Code doesn't recognise (Opus 4.6, Sonnet and Haiku stay unsupported there). The variable counts as safe in a settings file's `env` block, so it applies before workspace trust and needs no managed-settings approval.
 
 ---
 
@@ -892,6 +956,14 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 ### 2.1.137 ◆◆◆◆
 
 - 🔴 Changed nothing but the version number, build time and commit hash recorded in the build; the JavaScript, the other embedded files and the Bun runtime are identical to 2.1.136.
+
+---
+
+### 2.1.126 ◆◆◆◆
+
+- 🔴 Fixed `/effort` applying low, medium, high and xhigh only to the current session, whether typed or picked in its slider, although unlike `max` their reply didn't say "(this session only)"; they now save `effortLevel` to your user settings, `/effort auto` removes the saved level, and a failed write shows "Failed to set effort level: …".
+- 🟢 Raised the stream watchdog's idle limit from 90 seconds to 5 minutes without data before it aborts a response; background sessions turn this watchdog on (`CLAUDE_ENABLE_STREAM_WATCHDOG`), and `CLAUDE_STREAM_IDLE_TIMEOUT_MS` can still raise the limit but no longer set it below 5 minutes.
+- 🟢 Removed the reminder to consider whether each file is malware, and to refuse to improve it, that the Read tool appended to text files when the model was Claude 3.x, Sonnet 4 or 4.5, Opus 4, 4.1 or 4.5, or Haiku 4.5.
 
 ---
 
