@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 73 releases from 2.1.**112** to 2.1.**325**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 74 releases from 2.1.**111** to 2.1.**325**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -1568,3 +1568,126 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 - 🔴 Stopped sending `temperature` to Claude Opus 4.7 on requests made with thinking off, since that model rejects the parameter: the main conversation with thinking turned off, subagents (which run without thinking unless forked) and compaction's fallback summary; other models still get the configured override or the default of 1.
 - 🟢 Fixed auto mode's permission classifier failing on Claude Opus 4.7: its `temperature` of 0 is no longer sent to that model.
+
+---
+
+### 2.1.111 ◆◆◆◆
+
+- 🔴 Changed the system prompt for every model and account to the shorter variant that 2.1.110 sent only to Opus 4.6 accounts in a server-side experiment: it adds a "Text output" section (say in one sentence what you're about to do before the first tool call, give one-sentence updates, end with a one- or two-sentence summary), limits of 25 words between tool calls and 100 words for final answers unless the task needs more, no code comments by default, and two-or-three-sentence answers to exploratory questions without implementing. It also condenses the tool and session guidance and drops the instructions to read code before proposing changes, avoid time estimates, diagnose a failure before switching approach, ask why a tool call was denied, and write GitHub references as `owner/repo#123`.
+- 🔴 Added the `proxyAuthHelper` setting (early access, only with `CLAUDE_CODE_ENABLE_PROXY_AUTH_HELPER=1`): a shell command whose output Claude Code sends as the `Proxy-Authorization` header on requests through your proxy, cached for 5 minutes (`CLAUDE_CODE_PROXY_AUTH_HELPER_TTL_MS` changes that) and run again with the proxy's challenge in `CLAUDE_CODE_PROXY_AUTHENTICATE` after a 407. The command also gets `CLAUDE_CODE_PROXY_URL` and `CLAUDE_CODE_PROXY_HOST`; in interactive sessions a command from project or local settings waits until the workspace is trusted, while `claude -p` and SDK sessions run it without that check.
+- 🔴 Added an SDK initialize option, `appendSubagentSystemPrompt`, that appends text to the system prompt of every subagent, nested ones included, when `CLAUDE_CODE_ENABLE_APPEND_SUBAGENT_PROMPT` is set.
+- 🔴 Added per-tool permission policies to the SDK's `mcp_set_servers` request for HTTP and SSE servers: each tool can carry `always_allow`, `always_ask` or `always_deny`, and the allow and deny ones become session permission rules.
+- 🔴 Let cloud sessions (`CLAUDE_CODE_REMOTE`) name a remote setting in `CLAUDE_CODE_SYSTEM_PROMPT_GB_FEATURE` whose text replaces the SDK session's system prompt.
+- 🔴 Required manual approval for PowerShell tool commands with paths that start with `~user` (another user's home folder), since Claude Code can't check where they point.
+- 🔴 Made slash commands that can't run in `claude -p` and SDK sessions say so: commands that open a panel now reply "/name opens an interactive panel and isn't available in this environment. Run it from the Claude Code terminal instead." instead of doing nothing, built-in commands the session doesn't offer reply "/name isn't available in this environment.", and the command list stays limited to commands that work there after a directory change or plugin reload.
+- 🔴 Widened "did you mean" suggestions for mistyped slash commands and Skill tool names to two edits for every name length (short names allowed only one), with two swapped letters counting as one edit.
+- 🔴 Raised the image size limit for Opus 4.7 to 2576×2576 pixels; other models keep 2000×2000.
+- 🔴 Changed the "model isn't available" errors on Bedrock, Vertex, Foundry and Mantle to suggest Opus 4.1 for Opus 4.7 and Opus 4.5 too (Opus 4.5 had no suggestion before).
+- 🔴 Stopped showing auto mode's classifier the read-only tool calls in the conversation it reviews (Read, Grep, Glob, LSP, ToolSearch and the MCP resource list and read tools).
+- 🔴 Made effort support follow `modelOverrides` rather than the provider's model name, so custom-named Opus 4.6 and Sonnet 4.6 models get the effort controls and request parameter their configured model supports.
+- 🔴 Removed the "We recommend medium effort for Opus" dialog that offered Pro and Max users on Opus 4.6 a one-time effort choice.
+- 🔴 Removed the remote switch `tengu_garnet_loom` (off by default) that ran subagents inheriting an Opus main model on Sonnet instead.
+- 🔴 Moved the "respond without a thinking block" reminder from Opus 4.6 (switched on by the account's `loud_sugary_rock` client data) to Opus 4.7, behind the remote switch `tengu_loud_sugary_rock` (off by default).
+- 🔴 Kept proactive auto-compaction on when you've set the auto-compact window through an environment variable or settings, while the remote mode `tengu_cobalt_raccoon` (off by default, it turns proactive auto-compaction off) is on.
+- 🔴 Blocked `/feedback` and feedback surveys for organization accounts (Team or Enterprise sign-in, or a first-party API key) whose policy hasn't loaded yet, as was already done in essential-traffic mode; one more survey now checks that policy too.
+- 🔴 Made `/feedback` reports redact secrets in the report's own fields as well as the transcript, checking each JSON value in the transcript on its own.
+- 🔴 Added `routines` as another name for the bundled `/schedule` skill.
+- 🔴 Added pointers to `/feedback`: "Still having issues? Run /feedback to report details." at the end of `/doctor`, and "Something else? Use /feedback to report bugs or request features." in `/help` when the terminal has at least 44 rows.
+- 🔴 Showed the jump-to-bottom shortcut (`ctrl+end` by default) in the "new messages" pill.
+- 🔴 Kept the cursor on a plugin in `/plugin`'s installed list after you toggle it, even when the list re-sorts, and made the list's section and scope headings separate rows that the cursor skips; the list also shows more rows (at least 8, or the terminal height minus 10, where it was at least 6 or the height minus 13).
+- 🔴 Sorted the merged list of available agents by agent type.
+- 🔴 Reworded `/clear`'s description to "Start a new session with empty context; previous session stays on disk (resumable with /resume)".
+- 🔴 Changed how cloud sessions bundle your repository: when `git stash create` fails in a repository with commits, it now stops with "Could not capture uncommitted changes … Run `git add .` or commit, then retry." instead of going ahead without your uncommitted work, and the created session can carry tags.
+- 🔴 Dropped the "When issuing multiple commands" guidance from the Bash tool's description while the remote switch `tengu_relay_chain_v1` (off by default) is on.
+- 🔴 Made permission checks for tool calls run from REPL code (`CLAUDE_CODE_REPL`) see the calls made earlier in the same REPL block and the full tool list.
+- 🔴 Treated `VERTEX_REGION_CLAUDE_4_5_OPUS`, `VERTEX_REGION_CLAUDE_4_7_OPUS` and `OTEL_LOG_RAW_API_BODIES` in a settings file's `env` as safe: they apply before the workspace trust prompt and don't count toward its warning.
+- 🔴 Updated the bundled `/claude-api` skill for Opus 4.7 (`claude-opus-4-7` as its Opus model, notes that it takes adaptive thinking only, answers `temperature`, `top_p`, `top_k` and `budget_tokens` with a 400, supports `xhigh`, omits thinking text by default and has 1M context, its caching minimum, and help with migrating between model versions), and made it write its reference files into a local skill folder on first use so Claude can read any of them. It also teaches Opus 4.7 task budgets through `output_config.task_budget` (a 20,000-token minimum, the `task-budgets-2026-03-13` beta header), and has Claude ask which files to change before migrating models unless the request already names a file, folder or list of files.
+- 🔴 Told the memory fact-extraction step (behind the remote switch `tengu_billiard_aviary`, off by default) to lift facts only from memory files and never answer the query itself.
+- 🔴 Renamed model labels: "(with 1M context)" became "(1M context)", Opus Plan Mode now reads "Use Opus in plan mode, Sonnet otherwise", and the 1M-unavailable message says "Opus with 1M context is not available for your account".
+- 🔴 Listed Opus 4.6 and Opus 4.6 (1M context) as their own `/model` entries on Bedrock, Vertex, Foundry and Mantle when no custom Opus model is set, and kept an Opus 4.6 row for first-party and Claude Platform on AWS sessions already using it.
+- 🔴 Stopped rejecting `--session-id` as "already in use" when it names the session given to `--resume` together with `--fork-session`.
+- 🔴 Drew `/context`'s lists of memory files, skills, agents and MCP tools as indented trees instead of rows starting with "└".
+- 🔴 Updated the Bun runtime from build `1.3.13+edb020d5d` to `1.3.13+743d2a40e`: about 295 KB more native code (the executable grew by about 970 KB) with no new or removed sections, two new variables (`BUN_DEBUG_FORCE_NIX_HOST`, `BUN_INTERNAL_TEST_CHANGED_TRIGGER_FILE`), four new git option strings (`--name-only`, `--show-toplevel`, `--exclude-standard`, `--full-name`), and built-in JavaScript that now refreshes a network socket's idle timer whenever data arrives.
+- 🟡 (2.1.114) Made the tool permission dialog crash for requests that arrive without a tool context (agent-team teammates' requests and requests relayed from remote sessions): it now reads the permission mode for its analytics event without a guard, and that stayed broken through 2.1.113.
+- 🟡 (2.1.113) Made `/ultrareview` run its repository and billing checks in parallel, show a "Scope:" line with the branch's diff stat in its launch dialog, and animate "Launching".
+- 🟢 Fixed blank lines between the rows of `/context`'s usage grid: the layout engine now takes an element's own margins off the room its content is measured in, and each grid row is shifted one column left, so its last square used to wrap onto a second line.
+- 🟢 Added Claude Opus 4.7: the `opus` alias and the picker's Opus entries now mean it, it's the default model for Max subscribers and Team seats on the Max 5x tier, agent-team teammates default to it, and the system prompt names it as the newest Opus (Bedrock `us.anthropic.claude-opus-4-7`, Mantle `anthropic.claude-opus-4-7`, `claude-opus-4-7` elsewhere, region override `VERTEX_REGION_CLAUDE_4_7_OPUS`); it's priced like Opus 4.6, with 64,000 output tokens by default up to 128,000, 1M context, adaptive thinking that `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` doesn't turn off (the variable now applies only to Opus 4.6 and Sonnet 4.6), the advisor tool and a January 2026 knowledge cutoff, while `/fast` keeps using Opus 4.6. The legacy-model notice now says "Model updated to Opus 4.7", commits made with a model Claude Code doesn't recognize get "Co-Authored-By: Claude Opus 4.7", and this release still sent `temperature` to Opus 4.7, which rejects it, so its requests with thinking off and auto mode's classifier failed until 2.1.112.
+- 🟢 Added an "Opus 4.7 is here" welcome notice, "Welcome to Opus 4.7 xhigh! · /effort to tune speed vs. intelligence", shown ahead of the other startup notices on up to 12 launches of first-party sessions.
+- 🟢 Added the `xhigh` effort level between `high` and `max` (Opus 4.7 only, other models fall back to `high`) in `/effort`, `--effort`, the `effortLevel` setting, the model picker ("xHigh", taking `max`'s old ◉ icon while `max` gets ◈), agent definitions and the SDK's model list; Opus 4.7 defaults to `xhigh` and keeps it over a saved effort until you change effort once with `/effort`, the model picker, `--effort` or the settings file.
+- 🟢 Made `/effort` with no argument open a slider from Speed to Intelligence (←/→ to move, Enter to confirm) instead of printing the current level; the notice after an effort change now replaces any earlier one and stays 10 seconds instead of 12.
+- 🟢 Changed which models qualify for auto mode: for Max subscribers only Opus 4.7 (no longer Opus 4.6 or Sonnet 4.6), and for other first-party and Claude Platform on AWS sessions Opus 4.7 as well as Opus 4.6 and Sonnet 4.6.
+- 🟢 Added "Auto (match terminal)" to the `/theme` picker and `auto` to the theme choices in the settings Claude Code lists for `/config`; in that mode Claude Code asks the terminal for its background colour and switches between light and dark when the terminal reports a theme change.
+- 🟢 Added the bundled `/less-permission-prompts` skill, which has Claude scan your recent transcripts for read-only Bash and MCP tool calls and add a prioritized allowlist to the project's `.claude/settings.json`.
+- 🟢 Changed `/ultrareview` (already present behind a remote switch): its description and confirm dialog show an estimated duration and cost from the remote config (defaults "~10–20 min" and "$10-$20"), the overage prompt always says "This review bills as Extra Usage" with that cost, the remote config can pick the review model, a repository too large to bundle is refused up front with a hint to review a PR instead, the merge base is looked up against `origin/<default branch>` first, an empty change set gets "It doesn't look like you have any new commits or changes to review…", and SDK hosts can start it with an `ultrareview_launch` request.
+- 🟢 Turned on the PowerShell tool on Linux when `CLAUDE_CODE_USE_POWERSHELL_TOOL` is set to a true value (outside Windows it was always off); a `--tools` list that doesn't name it leaves it off.
+- 🟢 Stopped prompting for read-only commands with unquoted globs such as `ls *.ts`, for a fixed list of commands (`ls`, `cat`, `head`, `tail`, `grep`, `wc`, `diff`, `du`, `stat`, `cd` and similar); unquoted variables still prompt.
+- 🟢 Stopped prompting for `cd <dir> && …` chains when the `cd` goes to an absolute, `./` or `../` path inside your working directories and the line uses only `&&`: the rest is checked as if it ran in that folder, though chains that run `git` still prompt.
+- 🟢 Added a "Did you mean `claude <command>`?" suggestion when `claude <word>` is a near-miss of a subcommand; it exits with code 1 instead of starting a session with that word as the prompt.
+- 🟢 Named plan files after your prompt (its first few words plus random words) instead of random words alone.
+- 🟢 Improved `/setup-bedrock` and `/setup-vertex`: they show the real user settings path, start from models already pinned in `ANTHROPIC_DEFAULT_*_MODEL`, mark "(currently pinned)", and offer "Pin the working models with 1M context".
+- 🟢 Added sorting by estimated token count to `/skills` (`t` toggles it).
+- 🟢 Made Ctrl+U clear the whole input instead of deleting to the start of the line, both in the prompt and in search boxes (in the prompt, Ctrl+Y brings it back).
+- 🟢 Made Ctrl+L also force a full redraw of the screen.
+- 🟢 Added `[` (print output) and `v` (open in your `VISUAL` or `EDITOR` program) to the transcript view's footer hints.
+- 🟢 Replaced the "… +N lines …" marker inside very long sent prompts with a full-width "(N lines hidden)" rule.
+- 🟢 Added `plugin_errors` to the `stream-json` init message when plugins were demoted for unsatisfied dependencies.
+- 🟢 Added `OTEL_LOG_RAW_API_BODIES`, which sends full API request bodies (thinking redacted) and response bodies as OpenTelemetry log events, cut off after 61,440 UTF-16 code units of serialized JSON.
+- 🟢 Quieted API retries: until the last attempt they now show only a dim "Retrying in … · attempt n/m" line rather than the error, except for rate-limit, SSL and connection errors (before, the first three attempts showed nothing and later ones showed the error).
+- 🟢 Asked MCP servers for uncompressed responses (`Accept-Encoding: identity`) on HTTP, SSE and IDE connections.
+- 🟢 Removed the non-streaming fallback request's cap of two retries and its 60-second timeout after a stalled stream, so it retries and waits like a normal request again.
+- 🟢 Stripped control characters from terminal notifications (iTerm2, Kitty, Ghostty) and sent iTerm2's as "title: message" without blank lines, which fixes display tearing in iTerm2 with tmux.
+- 🟢 Fixed `@` file suggestions in folders with no tracked files: untracked files are indexed even when Git lists no tracked ones, and the file list isn't rescanned on every turn outside Git.
+- 🟢 Fixed stale LSP diagnostics: documents now carry increasing version numbers, diagnostics for an older version are dropped, and Write and Edit clear pending diagnostics for the file they change.
+- 🟢 Fixed Tab-completing `/resume` resuming a session straight away instead of opening the picker when no argument was typed.
+- 🟢 Fixed `/clear` dropping the session name set with `/rename`.
+- 🟢 Improved plugin dependency errors to say whether version requirements conflict, are invalid or are too complex to intersect (control characters removed, lists cut at 200 characters), cleared the stale resolved version after `plugin update`, and made `plugin install` reinstall a dependency that's enabled but not installed at the same scope.
+- 🟢 Rewrote the Skill tool's description to drop its examples (`commit`, `review-pr`, `pdf`) and tell Claude to call only skills from the available list or ones the user typed, never invented names.
+- 🟢 Stopped pointing Bedrock, Vertex, Foundry and Mantle users at the Anthropic status page in 429 rate-limit errors.
+- 🟢 Stopped a feedback survey from appearing while another survey is open.
+- 🟢 Made bare URLs in tool output clickable links by default, so they keep working when the terminal wraps them (for outputs up to 100,000 characters).
+
+<details>
+<summary>19 internal changes</summary>
+
+- 🔴 Moved saving the update channel chosen by `claude install latest` or `stable` ahead of the launcher checks and the cleanup of npm installs and shell aliases.
+- 🔴 Started sending `high` explicitly when a supported model has no chosen or account-specific effort, instead of leaving `output_config.effort` out (`CLAUDE_CODE_EFFORT_LEVEL=auto` or `unset` still leaves it out for older models); Opus 4.6 on Max also gets `medium` even when both older effort experiments are off.
+- 🔴 Delayed Claude Code's self-restarts by one event-loop turn before the replacement process starts, including the restarts after login, provider setup and a Bedrock model upgrade.
+- 🔴 Added the `tengu_unknown_command_suggestion` event, sent each time the `claude <word>` typo suggestion is printed.
+- 🔴 Logged failed analytics event uploads only to the debug log instead of recording them as errors.
+- 🔴 Changed the Datadog event allowlist: dropped `tengu_sdk_transport_error`, added `tengu_vscode_sdk_stream_ended_no_result`.
+- 🔴 Stopped sending `tengu_sdk_transport_error` and waiting up to 500 ms for telemetry when a `stream-json` input line can't be parsed; the process still prints the error and exits with code 1.
+- 🔴 Added `session_state`, `last_message_type` and `pending_control_requests` to the SDK stall event, and `api_error_status` and `cause_name` to the SDK session crash event.
+- 🔴 Added `is1hCacheTTL`, `queryDepth`, `querySource`, `model` and `globalCacheStrategy` to prompt-cache break diagnostics.
+- 🔴 Dropped `error_class` and `fallback_cause` from the non-streaming fallback's error event.
+- 🔴 Added the `tengu_ptl_surfaced_to_user` event when a prompt-too-long or image error is shown.
+- 🔴 Added a `bashMissKind` label to Bash permission decisions (`sed-dangerous`, `cd-compound-write`, `multi-cd`, `no-rule-match` and others); nothing in this build reads it by name.
+- 🔴 Made the list of models without tool search a remote setting (`tengu_tool_search_unsupported_models`, still Haiku by default) and the memory survey's chance a remote number (`tengu_velvet_moth`, still 0.2).
+- 🔴 Moved the "send a message if the user would act on this" hint inside the `<task-notification>` block of Monitor events.
+- 🔴 Made startup wait up to 300 ms for remote feature flags before loading tools when none are cached yet.
+- 🔴 Kept a whitespace-only piece of an assistant message when another piece of the same message has content, instead of filtering it out.
+- 🔴 Wrote transcripts hydrated from a cloud session to disk line by line instead of as one large string.
+- 🔴 Added `tengu_opus47_launch_shown` and the `opus47LaunchSeenCount` and `unpinOpus47LaunchEffort` config keys behind the Opus 4.7 notice and effort pin.
+- 🔴 Reworded the invalid update-channel error to "Use 'latest' or 'stable'" and made the channel name `rc` fail with the old wording.
+
+</details>
+
+<details>
+<summary>15 changes with no effect in this build</summary>
+
+- 🔴 Removed an unused helper that read session memory and logged its length; nothing in 2.1.110 called it.
+- 🔴 Added an unused channel-versus-version check to the native installer and passed its skipped-update flag through another helper; nothing reads either.
+- 🔴 Added a macOS sleep inhibitor that runs `caffeinate` while Claude works and restarts it every 4 minutes; on Linux it does nothing, as the old empty stub did.
+- 🔴 Added a `pre-suspend` event before Ctrl+Z suspends the app; nothing listens to it, so suspend works as before.
+- 🔴 Added an always-disabled hidden command named `stub` to a command list that nothing in the build reads.
+- 🔴 Rewrote the Skillify skill's template to have Claude review the conversation above instead of receiving session memory and user messages pasted in; nothing registers that skill in this build.
+- 🔴 Added a model migration guide to the `/claude-api` skill and pointed its quick reference and error-codes page at `shared/model-migration.md`, but the guide is never added to the skill's files, so that file isn't available.
+- 🔴 Added a `reportMetadata` pass-through to the Remote Control bridge handle; nothing calls it.
+- 🔴 Passed the permission mode to SSH sessions when they connect and when it changes; nothing in this build can start an SSH session.
+- 🔴 Added a startup check for a direct-connect host that switches the permission mode to default; the host value is always unset in this build.
+- 🔴 Counted a running background shell task as "busy" in the session's status; the only thing that reads it is an empty effect.
+- 🔴 Added an internal `mirror_error` system message to the SDK's message schema, for transcript-mirror writes that fail; nothing in this build sends it.
+- 🟢 Removed the "Session environment not yet supported on Windows" early return, so `CLAUDE_ENV_FILE` and SessionStart environment files apply on Windows; this Linux build never took that branch.
+- 🟢 Fixed Windows permission rules with drive-letter paths to be root-anchored and compared paths without regard to drive-letter case; both changes sit in Windows-only branches this Linux build never takes.
+- 🟢 Made the PowerShell tool on Windows follow `CLAUDE_CODE_USE_POWERSHELL_TOOL`, or else the remote switch `tengu_cobalt_ridge` (off by default), and deny it whenever Bash is denied unless it was turned on explicitly; those branches run only on Windows.
+
+</details>
