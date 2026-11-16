@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 69 releases from 2.1.**112** to 2.1.**325**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 70 releases from 2.1.**112** to 2.1.**325**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -708,6 +708,35 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 ### 2.1.276 ◆◆◆◆
 
 - 🟢 Stopped first-party sessions whose `ANTHROPIC_BASE_URL` points away from `api.anthropic.com` from choosing a standby advisor model when the advisor tool is on (through `CLAUDE_CODE_ENABLE_EXPERIMENTAL_ADVISOR_TOOL` or a remote switch that's off by default); since 2.1.275 that made every request through such a proxy or gateway fail with an HTTP 400 about the `advisor_20260301` tool.
+
+---
+
+### 2.1.272 ◆◆◆◆
+
+- 🔴 Added the `AppifactRepl` tool to Cowork cloud sessions, behind a remote switch that's off by default: Claude can fill or revise an Artifact made from a Design or Slides type with one JavaScript program, which Node runs outside the command sandbox against the appifact SDK (a built-in copy or a loaded appifact skill's), and each store, file or asset call it makes runs as an Artifact or ArtifactData tool call with that tool's hooks and permission checks. It asks first in plan mode and wherever a rule asks before Bash as a whole runs, is removed where a rule denies Bash as a whole, isn't offered to subagents, and auto mode sets aside allow rules for it.
+- 🔴 Added a read-ahead for Cowork cloud sessions opened beside a new, empty Artifact the user owns that was made from a type (same remote switch): before the first turn, Claude Code reads the type's instructions file and saves it, the type's reference pages and, when one design system was chosen for the session, that system's files to the session's scratchpad, then tells Claude in the opening context that they're on disk and to print them with Bash instead of reading them through the Artifact tool. When the files can't be saved, it puts the instructions themselves into the opening context. Where `AppifactRepl` is available, it also adds a two-step note for designs or slides to the type note.
+- 🔴 Changed the Artifact tool's quickstart for slides and designs where `AppifactRepl` is available: once a type matches, it saves the type's instruction files (first-party types only) and the picked design system's files to the scratchpad, in place of reading that system's README into its answer, and replies with a two-turn plan: create the Artifact and print those files with Bash, then build it with a series of `AppifactRepl` calls. The "Created a new Artifact" result then says those files are already on disk, so they aren't attached again and the step that lists design systems and reads the chosen one's README is skipped.
+- 🔴 Changed the Artifact tool's instructions in Cowork cloud sessions where the remote switch behind `AppifactRepl` is on: a Design or Slides type's instructions now end with a note on building and revising that kind of Artifact efficiently (in one `AppifactRepl` program when the tool is there), the tool's descriptions say to leave out `auto_open` when filling through `AppifactRepl`, the quickstart's hint stops suggesting `auto_open: "after_first_write"`, and a create asking for `auto_open: "after_first_write"` is refused while the tool is available, because those writes never open the page.
+
+<details>
+<summary>4 internal changes</summary>
+
+- 🔴 Added a `start_kit` field (`both`, `type_only`, `system_only` or `none`) to `artifact_quickstart`, and success and failure events for the read-ahead (`artifact_opening_prefetch`) and for each `AppifactRepl` artifact call (`artifact_repl_call`), behind the same remote switch.
+- 🔴 Added "how to build and iterate on" to the bracketed labels that outside text can't pass off as Claude Code's own, in every session: a bracket followed by those words, in any case or with look-alike letters, now gets a backslash in artifact text Claude reads and in subagent output handed back to Claude, where it's also flagged as an instruction-shaped match and reported in `tengu_subagent_output_flagged`; in Claude's own replies it's counted in `tengu_assistant_output_harness_content`.
+- 🔴 Made every session that loads the main app load the `AppifactRepl` tool's module at startup, which reads and unpacks its 25 KB built-in SDK script from the executable even where the tool is off.
+- 🔴 Counted an `AppifactRepl` allow rule with no pattern as an overly broad Bash rule in the startup report `tengu_ant_overly_broad_bash_detected`, which is sent outside cloud and Cowork sessions; nothing is stripped.
+
+</details>
+
+<details>
+<summary>4 changes with no effect in this build</summary>
+
+- 🔴 Added a way for `AppifactRepl` to run its program inside the command sandbox (a wrapped shell command, cleanup after it, sandbox failures marked in its error output) that nothing can choose: the step that plans the run refuses whenever the sandbox would take the command.
+- 🔴 Moved the startup profiler's initialization mark and first wall-clock and process-uptime samples inside the worker that runs plugin function hooks, so they're now taken after 24 more small definitions (a hooks error class, matcher helpers and constants) have loaded; nothing in the worker reports them.
+- 🔴 Exported the lookup for a rule that covers Bash as a whole under the name `wholeToolBashRule` from the deny-rule filter module; nothing in the build imports it by that name.
+- 🔴 Changed the spelling of a name read inside a branch of the end-of-turn handling that's compiled as `if (false)`; neither build declares either name, and the branch never runs.
+
+</details>
 
 ---
 
