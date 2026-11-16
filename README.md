@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 76 releases from 2.1.**111** to 2.1.**325**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 77 releases from 2.1.**111** to 2.1.**325**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -1371,6 +1371,115 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 ### 2.1.156 ◆◆◆◆
 
 - 🟢 Stopped moving tool calls behind a later thinking block when a reply interleaves thinking with tool use, which made the API reject the conversation for modified thinking blocks; Claude Code now leaves such replies in order (and records the skip in telemetry), and its strip-and-retry recovery also recognises those errors when they mention `thinking` or `redacted_thinking`.
+
+---
+
+### 2.1.153 ◆◆◆◆
+
+- 🔴 Changed auto-compaction outside cloud sessions to wait until a request no longer fits: compact-and-retry after the API rejects a request as too long is now on by default (it needed a remote switch and an interactive session), and the usual threshold applies only when you set `CLAUDE_CODE_AUTO_COMPACT_WINDOW` or `autoCompactWindow`, compacting through the same path. Before, only models with a 1M-token window worked this way, behind a remote switch; `/compact`, `/context` and the context warning follow the new rule, and a remote experiment can bring the threshold back in interactive sessions.
+- 🔴 Changed `/compact` to apply a summary precomputed in the background when one is ready. Background precomputing itself, behind a remote switch that's off by default, now stays off in cloud sessions and no longer depends on compact-and-retry being on.
+- 🔴 Changed the word that asks for a dynamic workflow from "ultrawork" to "workflow" or "workflows", and added alt+w (`chat:workflowKeywordToggle`) to ignore it for the current prompt; the "Dynamic workflow requested for this turn" notice names the key and stays 30 seconds instead of 5.
+- 🔴 Added a usage warning to the dynamic workflow approval prompt ("Dynamic workflows can use a lot of tokens quickly…"), and made auto mode ask before running a dynamic workflow until you've approved one, which saves `skipWorkflowUsageWarning` to your user settings; background sessions, agent-team teammates and non-interactive runs aren't asked.
+- 🔴 Reworked the dynamic workflow approval prompt: retitled "Run a dynamic workflow?", it lists the script's description and numbered phases with sample agent prompts in place of the phase diagram, renames "View workflow diagram" to "View workflow summary", passes feedback you type with Yes or No to Claude, and hides "don't ask again" when always-allow isn't permitted.
+- 🔴 Added a `· from the "<name>" workflow` label to permission prompts raised by a dynamic workflow's agents, and a "Yes, and switch to auto mode" option on their Bash and tool prompts in default or accept-edits mode when auto mode is available.
+- 🔴 Reworked the `/workflows` detail view: agents show queued, stopped and skipped states, and each agent card has Prompt (expand with ⏎), Activity and Outcome sections, j/k scrolling, retry attempts and how long it has been waiting or idle.
+- 🔴 Changed the Workflow tool's model-selection guidance to prefer inheriting the session's model and to pick another tier only with high confidence, dropping its Haiku example.
+- 🔴 Added an exhaustive-review recipe to the Workflow tool's instructions: drop findings seen in any earlier round, judge fresh findings through three different lenses with two votes needed to keep one, and stop after two rounds find nothing new; it also recommends different verifier perspectives over identical refutation prompts.
+- 🔴 Removed the bundled `bughunt`, `bughunt-lite`, `plan-hunter` and `review-branch` workflows; `deep-research` is the only one left outside cloud sessions.
+- 🔴 Changed the fallback after a refusal, behind a remote switch that's off by default, to move the whole session to the fallback model at the first refusal with "<model>'s safety filter flagged this message. Switched to <model> for this session."; before, it retried that turn and switched back unless the next turn was refused too. Subagents' fallbacks no longer post a notice.
+- 🔴 Removed the Claude Opus 4.7 thinking reminder, a system-prompt section and per-message reminder asking the model to answer simple messages without a thinking block, which a remote switch (off by default) turned on.
+- 🔴 Added `thinking_tokens` system messages with a running estimate of thinking tokens to SDK output and Remote Control, and sent the thinking-token-count beta, behind a remote switch that's off by default, from non-interactive sessions too.
+- 🔴 Added a "feature of the week" usage-credit offer for Pro and Max subscribers, configured remotely and off unless Anthropic sets it: running the command it features (`/loop`, `/review` or `/security-review`) in an interactive session claims credits for your organization once and shows "<amount> in usage credits added to your account", with "Used before any purchased credits · expires in 90 days" below it.
+- 🔴 Made auto mode ignore catch-all Bash and PowerShell allow rules, and Agent allow rules, every time it checks allow rules, including when it checks what accept-edits mode would allow, instead of only removing them when you switch to it; a rule whose content is only spaces or `*` now counts as catch-all.
+- 🔴 Made Claude Desktop sessions ignore provider and credential variables in the `env` of project, local and managed settings, and sessions with `CLAUDE_CODE_HOST_AUTH_ENV_VAR` ignore them in every settings source and the global config, as `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST` sessions already did.
+- 🔴 Changed how organization policy-limit requests sign in: they now work with workload identity federation logins and use a cached `apiKeyHelper` key when that helper is active, and no longer fall back to a saved claude.ai login that isn't the active login method.
+- 🔴 Made custom agents in `~/.claude/agents` and `.claude/agents` reload during a session when their files change, as skills and commands already did; agents passed with `--agents` stay.
+- 🔴 Added plugin suggestions to the startup notices ("plugin suggestion: <plugin> · /plugin"), shown at most twice per plugin and not when `spinnerTipsEnabled` is off or `spinnerTipsOverride` replaces the default tips.
+- 🔴 Changed plugin relevance hints in marketplaces: `filesRead` glob patterns, matched against files read during the session, replace the `filePath` regular expression, and a new `cwd` pattern matches the working directory, so a suggestion can show before the first turn.
+- 🔴 Made `claude update` on npm installs follow the server-side version policy: it caps the update at the allowed maximum and downgrades when the policy requires it ("Downgrading to <version> … required by a server-side version policy").
+- 🔴 Added a warning at the start of `/login` when `CLAUDE_CODE_OAUTH_TOKEN` is set: it will override the new login, so unset it afterwards.
+- 🔴 Kept the Remote Control trusted-device enrollment when you `/login` again to the same account and organization, instead of clearing and re-enrolling it.
+- 🔴 Added a message for Bash commands whose output was lost because the temp filesystem was full or out of inodes ("Command output was lost: the temp filesystem at … is full …"), suggesting `CLAUDE_CODE_TMPDIR`.
+- 🔴 Added the project's `.claude/hooks` folder to the paths sandboxed commands can't write, next to `.claude/skills` and the settings files.
+- 🔴 Stopped treating Bash commands that assign `TEMP` or `TMP` as read-only, so they ask for permission like assignments to other variables the shell already sets.
+- 🔴 Made Bash permission checks treat a redirect target starting with `!` or `=` as shell expansion instead of a file name.
+- 🔴 Made Claude Code retry with the other thinking mode when the API answers "adaptive thinking is not supported", as it already did for the longer form of that error.
+- 🔴 Dropped MCP servers named `claude-in-chrome` or `computer-use` when an SDK host sets servers during a session, and stopped cloud sessions from carrying such servers over.
+- 🔴 Stripped terminal escape sequences from status text, model and tool names and fallback notices received from a remote session before showing them.
+- 🔴 Made the GitHub PR status follow redirects to the same host, such as a renamed repository, and stop checking GitHub directly for the rest of the session after three failed checks in a row.
+- 🔴 Made project and local settings that set `subagentStatusLine` count as running commands, so the workspace-trust warning names those files as it does for `statusLine`; a new or changed `subagentStatusLine` in server-managed settings also brings up the managed-settings approval prompt in interactive sessions.
+- 🔴 Changed the monthly spend-limit adjuster so the first step up from your current limit raises it by at least 10 in your currency instead of 5.
+- 🔴 Moved the debug-mode, tmux-session, model-source and emergency-tip lines from the welcome banner into the startup notices below it.
+- 🔴 Kept a background job's status in `claude agents` when a turn ends without any text instead of reclassifying it, and stopped mid-turn updates from overwriting a blocked status.
+- 🔴 Made resuming a cloud session restore its permission mode through the normal mode switch, so a restored auto mode is set up as if you'd switched to it.
+- 🟡 (2.1.274) Stopped print mode from waiting for MCP servers to connect before the first request when tool search will defer their tools, except servers set to `alwaysLoad: true`.
+- 🟡 (2.1.154) Changed when dynamic workflows are available: besides `CLAUDE_CODE_WORKFLOWS`, a remote switch that's off by default can now turn them on, by default for every plan except Pro, with a new `enableWorkflows` setting and a "Dynamic workflows" switch in `/config`; organizations can block them with the `allow_workflows` policy, and `CLAUDE_CODE_WORKFLOWS` set to false turns them off.
+- 🟡 (2.1.154) Renamed workflows to "dynamic workflows" throughout the interface, including `/workflows`, task labels, completion notices and save prompts.
+- 🟢 Added `skipLfs` to `github` and `git` plugin marketplace sources, which sets `GIT_LFS_SKIP_SMUDGE=1` during clone, pull and fetch.
+- 🟢 Added a one-time "Claude Code can't auto-update · run `/doctor`" notice after an npm global update fails for lack of write permission, and changed `/doctor`'s text for that case to "Can't auto-update: npm global folder isn't writable" with three fixes.
+- 🟢 Added the last update attempt to `/doctor` ("Last update attempt: success → <version> (<date>)" or "failed (<status>)"), recorded by the npm and native updaters, and dropped its "Update permissions" line.
+- 🟢 Gave status line, hook and file-suggestion commands `COLUMNS` and `LINES` with the terminal's size.
+- 🟢 Changed autocomplete in `claude agents`' dispatch input to suggest built-in slash commands and bundled skills, leaving out hidden ones and those whose invocation is turned off.
+- 🟢 Changed `claude agents`' PR column to show a linked `PR #N` for one PR or `N PRs` for several, with PR titles in the job's details.
+- 🟢 Combined the startup "needs auth" notices for MCP servers and claude.ai connectors into one count, held back while servers are still connecting.
+- 🟢 Fixed stateful MCP servers that don't offer the optional GET event stream reconnecting in a loop: a 404 from that stream no longer counts as an expired session.
+- 🟢 Fixed Claude Desktop sessions with a third-party provider, and sessions with `CLAUDE_CODE_HOST_AUTH_ENV_VAR`, using your claude.ai login when `ANTHROPIC_AUTH_TOKEN` or an `ANTHROPIC_API_KEY` or `apiKeyHelper` key is set, so a gateway could get your login instead of its own token; the `forceLoginOrgUUID` error now says third-party desktop sessions should remove that setting.
+- 🟢 Fixed subagent frontmatter MCP servers ignoring `--strict-mcp-config`, `--bare`, remote mode, enterprise MCP config and managed MCP allow and deny lists.
+- 🟢 Stopped `--strict-mcp-config` from removing inline MCP servers of agents passed with `--agents` or the SDK, and added a notice naming subagent MCP servers that were blocked and why.
+- 🟢 Fixed `claude update` on npm installs installing the newest version instead of your release channel's version; when you're already newer than the channel's version it now skips the update and says how to switch back.
+- 🟢 Fixed resuming by an absolute `.jsonl` transcript path first searching session titles, which used a lot of memory with many stored sessions.
+- 🟢 Fixed `claude agents` and `claude --bg` staying on a background daemon started by an older version from before binary takeover; a newer client now replaces it.
+- 🟢 Fixed print mode with stream-json input not exiting when stdin closes without an end-of-file.
+- 🟢 Made Claude Code exit cleanly when stdin fails (`EPIPE`, `EIO`, `ENXIO` or `EBADF`) and quietly close a failing stderr or `/dev/tty`; stdout's clean exit, which covered only `EPIPE` and `EIO`, now covers `ENXIO` and `EBADF` too.
+- 🟢 Fixed `file:` links in responses with relative or `localhost` paths not opening, by resolving them against the working directory.
+- 🟢 Changed `claude --help` to wrap descriptions to the terminal width, with the option column at most 36 characters wide.
+- 🟢 Added MCP tool progress (its message and percentage) to collapsed tool groups.
+- 🟢 Stopped the built-in `claude` subagent type from running in a temporary git worktree.
+- 🟢 Changed `/background` during a response to continue that response in the background session instead of dropping it.
+- 🟢 Fixed keyboard focus leaving fullscreen mode's bottom panel, where commands such as `/btw` appear, while a task is running, which made their shortcuts stop responding.
+- 🟢 Stopped a background session's own job-folder files from asking for permission to read or write.
+- 🟢 Fixed a background job whose working directory was deleted ending with a stack trace instead of "working directory no longer exists".
+- 🟢 Made `EnterWorktree` available right away in background sessions instead of through tool search.
+- 🟢 Fixed cmd+k not repainting background sessions attached from iTerm2 or Terminal.app: the check now uses the attached terminal instead of the session's own.
+- 🟢 Kept the terminal cursor at the input caret after full alternate-screen repaints, which Claude Code turns on for Windows (`CLAUDE_CODE_ALT_SCREEN_FULL_REPAINT`), so IME windows appear next to the caret.
+- 🟢 Fixed background colours bleeding in terminals limited to 256 colours by converting truecolor codes, and redrew cached characters when the colour level changes.
+- 🟢 Fixed copying to the clipboard from an attached background session inside tmux, screen or SSH by using the attached terminal's details.
+- 🟢 Stopped pre-started spare background processes from registering Remote Control sessions before they're used, which left stale entries in the Code tab.
+- 🟢 Fixed a background session's name not updating right after `/rename`.
+- 🟢 Changed `/model` to save your pick as the default for new sessions; `s` in the picker (keybinding `modelPicker:thisSessionOnly`, replacing `modelPicker:setAsDefault` on `d`) switches for this session only, and `/model <name>` also saves in interactive sessions.
+
+<details>
+<summary>12 internal changes</summary>
+
+- 🔴 Added the selected job's ID and the ID used for the connection to the attach telemetry (`tengu_bg_agent_action`) that `claude agents` sends.
+- 🔴 Limited error names, error codes and stack frames in telemetry and logs to identifier-shaped values.
+- 🔴 Added each startup phase's start time, and the process start time, to the startup timing that cloud sessions report.
+- 🔴 Renamed the agent field in cloud session events from `agent_id` to `session_agent_id`.
+- 🔴 Reported the session's active goal (condition, iterations, last reason, whether it's met) in remote session metadata.
+- 🔴 Added debug log lines for shutdown signals (uptime, parent process and stdin state), the end of print mode's message loop, failed reattaches and failed native updates.
+- 🔴 Added the request source to permission telemetry and numbered chosen options by their position in the prompt.
+- 🔴 Added an earlier prompt-cache breakpoint when a pinned fork point is also the last cacheable message in a request that skips cache writes, keeping the existing breakpoint on that message; behind a remote switch that's off by default.
+- 🔴 Changed forked agents' cache fork point to the first part of the last assistant reply instead of its last part.
+- 🔴 Skipped the retired `thinking_reminder` and `ultrawork_request` attachments when loading older transcripts.
+- 🔴 Stopped `claude mcp add`'s interactive screen from capturing console output.
+- 🔴 Renamed the workflow keyword attachment to `workflow_keyword_request` and its telemetry event to `tengu_workflow_keyword`.
+
+</details>
+
+<details>
+<summary>9 changes with no effect in this build</summary>
+
+- 🔴 Added `TEMP` and `TMP` exports to shell commands on Windows; the Linux build never takes that branch.
+- 🔴 Added a holder for an MCP configuration warning, printed at startup and shown as a 20-second notice; nothing ever sets it.
+- 🔴 Added filters that hide promotional startup notices for third-party providers and keep only one announcement; no notice is marked as either.
+- 🔴 Mentioned the workload identity variables in an "API key required" error inside a branch that never runs.
+- 🔴 Added a run-once function, called when `claude agents` and the main command start, that only records that it ran.
+- 🔴 Added an environment check for a contained session without internet access that isn't running as root outside a deliberate sandbox; nothing calls it.
+- 🔴 Added API error fields to assistant messages read from recorded test fixtures, a path that's switched off in shipped builds.
+- 🟢 Changed recovery after a failed npm update on Windows to restore the original executable by copying when renaming it back fails, and, if both fail, to say where the executable was kept and how to put it back; the Linux build never takes that branch.
+- 🟢 Added a `ClaudeCode.app` bundle with a microphone usage description that background sessions launch through on macOS; the Linux build never runs it.
+
+</details>
 
 ---
 
