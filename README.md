@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 71 releases from 2.1.**112** to 2.1.**325**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 73 releases from 2.1.**112** to 2.1.**325**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -1347,11 +1347,208 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
+### 2.1.133 ◆◆◆◆
+
+- 🔴 Changed SDK managed settings (`managedSettings` / `--managed-settings`) to apply only their restrictive keys even when no admin policy exists: permission rules, the `allowManaged*Only` and `strictPluginOnlyCustomization` locks, sandbox restrictions, MCP allow and deny lists and `forceLoginOrgUUID` stay, while everything else, such as `env`, hooks and `model`, is dropped.
+- 🔴 Made `--managed-settings` work whatever launched Claude Code; it used to be ignored, with a note only in the debug log, unless an SDK, Claude Desktop, the local agent or the VS Code extension started it.
+- 🔴 Made the startup settings-error screen and the SDK's settings-error reply include validation errors from lower-priority managed settings sources even when a higher-priority policy wins; 2.1.132 stopped collecting those sources' errors once one policy had won.
+- 🔴 Stopped sending `temperature` to models Claude Code doesn't know to accept it: only Claude 3 models, Opus 4 to 4.6, Sonnet 4 to 4.6 and Haiku 4.5 get it, except that on providers other than the Anthropic API and Claude Platform on AWS a model's `ANTHROPIC_DEFAULT_*_MODEL_SUPPORTED_CAPABILITIES` or `ANTHROPIC_CUSTOM_MODEL_OPTION_SUPPORTED_CAPABILITIES` list decides; custom and unrecognized model names used to get it too.
+- 🔴 Turned on fine-grained tool streaming (`eager_input_streaming`) on Google Vertex AI for Haiku 3.5, Sonnet 4 to 4.6 and Opus 4.5 to 4.7, and on Amazon Bedrock for Sonnet 4.6 and Opus 4.7, when no custom Vertex or Bedrock base URL is set. `CLAUDE_CODE_ENABLE_FINE_GRAINED_TOOL_STREAMING=1` now turns it on for any provider and endpoint, where it used to work only against the Anthropic API's own address.
+- 🔴 Made Amazon Bedrock (Mantle) requests that use `AWS_BEARER_TOKEN_BEDROCK` also send the token as `Authorization: Bearer`, alongside the `X-Api-Key` header they already carried.
+- 🔴 Changed subagents' newly started background shell commands: a background subagent now stays open while one runs instead of killing it when the subagent finishes, and each is stopped after an hour (`CLAUDE_SUBAGENT_BG_SHELL_MAX_MS` changes the limit). A command already tracked as a foreground task and then moved to the background, for example with Ctrl+B, gets neither change.
+- 🔴 Stopped the background-agent stall watchdog (10 minutes without progress, or `CLAUDE_ASYNC_AGENT_STALL_TIMEOUT_MS`) from ending an agent while one of its tool calls is still running.
+- 🔴 Added `MCP_CONNECT_TIMEOUT_MS` to set how long print and SDK sessions wait for MCP servers at startup before going on without them (5 seconds by default, as before).
+- 🔴 Treated an MCP server's 404 response that mentions `mcp_session_terminated` as an expired session, the same as the standard session-expired error.
+- 🔴 Made the Bash permission check treat any variable that a `for` or `while` loop body reassigns (by assignment, a nested `for`, `read`, `mapfile` or `readarray`) as unknown throughout the body, so a command early in the loop can't be approved against a value a later line changes.
+- 🔴 Made Bash commands that assign `HOME` count as too complex to approve automatically, like ones that assign `PATH` or `BASH_ENV`.
+- 🔴 Stopped treating `sed` commands with more than one in-place flag (`-i`, `-Ei`, `-ri`), or with a carriage return in the script, as safe to run without asking.
+- 🔴 Stopped the PowerShell tool (on Linux with `CLAUDE_CODE_USE_POWERSHELL_TOOL`) from treating `git`, `gh`, `docker` and `dotnet` commands as read-only when an argument is a variable or an expression rather than plain text.
+- 🔴 Widened the PowerShell tool's check for link creation with `New-Item -ItemType` to catch abbreviated, commented, curly-quoted and wildcard type names.
+- 🔴 Made the PowerShell tool's guard against `Remove-Item -Recurse` on the working directory or a parent of it expand `~` and accept backslashes, so targets written like `~/project` or `..\` that point there are caught too.
+- 🔴 Treated paths that start with `/\` or `\/` as network paths, so reading or editing one asks for permission, and stopped following symlinks whose target is a network-style path.
+- 🔴 Stopped showing a separate "hook returned blocking error" message when a PreToolUse hook blocks a tool call; the denied tool result still carries the hook's message.
+- 🔴 Added a "Plugin settings overridden" section to `/doctor` listing plugins you disabled in `~/.claude/settings.json` that project, local, `--settings` or managed settings turn back on, with advice for each; the `enabledPlugins` setting's description now explains the precedence.
+- 🔴 Added an "Open agents view by default" option to `/config` (`defaultToAgentsView`) that makes a plain `claude` in a terminal open the agents view; like the agents view itself, it works only behind a remote switch that's off by default.
+- 🔴 Added session colours to the agents view: a colour set with `/color` or from Remote Control is saved with the session's agents-view record, and the list shows each session's name in it.
+- 🔴 Made a background session that stops at a startup dialog show as blocked ("stuck on a startup dialog", "open this session to continue setup") as soon as the dialog appears, instead of after the 45-second startup watchdog.
+- 🔴 Made `claude daemon stop` mark the background sessions it ends as stopped in the agents view.
+- 🔴 Made background-session commands retry up to 10 times when the daemon gives no reply (`ENOREPLY`), as they already did while it was starting.
+- 🔴 Added `alt+1`-`alt+N` (up to 9) to the agents view's `?` help, for the existing shortcut that opens the sessions started from this terminal.
+- 🔴 Changed recaps of an idle session to judge whether the prompt cache is still warm from the cache lifetime the last request actually used, skipping the recap when that isn't known, and to skip recaps when you're at or near a rate limit.
+- 🔴 Made the cleanup of stale agent worktrees also remove ones still at the commit they were created from, even when that commit was never pushed.
+- 🔴 Made print and SDK sessions handle a permission answer that arrives after its prompt is gone before any other queued message.
+- 🔴 Made `--plugin-url` accept several URLs separated by spaces in one value.
+- 🔴 Fixed vim mode's step back on Escape checking the wrong character when the input contains decomposed accented characters.
+- 🔴 Fixed the stale-marketplace error telling you to run `claude marketplace remove`; it now says `claude plugin marketplace remove`.
+- 🔴 Let the account's client data (`simple_system_prompt`) switch any listed model to the shorter system prompt, on by default for those models unless `CLAUDE_CODE_SIMPLE_SYSTEM_PROMPT` is set to false; before, only Opus 4.7 could use it, with that variable or a remote switch that's off by default.
+- 🔴 Added "Each sentence of text output should change what the reader knows or does next." to the shorter system prompt's code-style guidance for Opus 4.7.
+- 🔴 Changed the shorter system prompt's Bash tool description to tell Claude to avoid running `cat`, `head`, `tail`, `sed`, `awk` or `echo` (in some setups also `find` and `grep`) unless told to or no dedicated tool can do the job, replacing the note that re-reading an unchanged file returns a stub.
+- 🔴 Added "Commit or push only when the user asks. If on the default branch, branch first." to the Git section of the shorter system prompt's Bash tool description, which `CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS` or `includeGitInstructions: false` still turn off.
+- 🔴 Changed the Opus 4.7 reminder to answer simple messages without a thinking block: it's now an attachment, its system-prompt section is reworded, and a new remote switch (off by default) that the account's client data can override controls it; the old switch no longer turns it on.
+- 🔴 Added a startup notice that Anthropic can set remotely, shown as a high-priority warning for 30 seconds (nothing is set by default, and remote workspaces skip it).
+- 🔴 Added a remote switch (off by default) under which background memory extraction and auto-dream don't write to the prompt cache, and requests get a second cache breakpoint: where a forked agent branched off the conversation, or otherwise on the message before the last.
+- 🔴 Changed `/radio` to open a different Claude FM stream (the command is behind a remote switch that's off by default).
+- 🔴 Changed the bundled Bun runtime to another build that still reports 1.3.14, with about 750 KB more machine code and 8.6 MB less read-only data, new `--experimental-http2-fetch`, `--experimental-http3-fetch` and `--no-orphans` options with matching `BUN_FEATURE_FLAG_*` variables, and changes to Bun's built-in JavaScript in its module loader.
+- 🔴 Made `claude agents` throw away keys typed while it starts, which used to reach the agents view once it opened; the agents view itself sits behind a remote switch that's off by default.
+- 🟢 Added the `worktree.baseRef` setting (`fresh`, the default, or `head`) and a "Worktree base ref" row in `/config` to choose whether `--worktree`, `EnterWorktree` and agent worktrees branch from `origin/<default branch>` or local `HEAD`; `EnterWorktree` no longer always uses `HEAD`, and its description says which base applies.
+- 🟢 Added the `sandbox.bwrapPath` and `sandbox.socatPath` managed settings (Linux and WSL, absolute paths, honoured only from admin-controlled settings) to point the sandbox at specific bubblewrap and socat binaries; the subprocess-isolation error names a `bwrapPath` that isn't executable.
+- 🟢 Added the admin-tier `parentSettingsBehavior` key: `first-wins` (the default) ignores SDK managed settings when an admin policy exists, and `merge` layers their restrictive settings under it.
+- 🟢 Added the effort level to hooks, as an `effort.level` field in their JSON input and a `CLAUDE_EFFORT` environment variable, and to Bash tool commands as `CLAUDE_EFFORT`, on models that support effort.
+- 🟢 Changed focus mode's instructions for sessions on the shorter system prompt, telling Claude not to narrate between tool calls and to put what it investigated, found, changed, decided and plans next into its final message.
+- 🟢 Made background sessions release memory when free memory drops below a remotely set threshold (1,024 MB by default): settled workers are retired after a minute instead of an hour and before new spawns, and the warm spare is disposed of and not refilled.
+- 🟢 Stopped erasing the saved refresh token from the shared credentials when a refresh fails with `invalid_grant`; the session that hit the failure marks that token as dead for itself instead.
+- 🟢 Fixed permission rules for the filesystem root (`/`) never matching, so `Edit` and `Write` rules for it always prompted.
+- 🟢 Fixed a compromised lock on the prompt-history file (for example after clock skew or a slow disk) raising an unhandled error; it's now logged.
+- 🟢 Fixed pressing Esc during compaction showing a spurious compaction error; cancelling now stops the summary request cleanly.
+- 🟢 Fixed MCP OAuth sign-in ignoring `HTTPS_PROXY`, `NO_PROXY`, custom CA certificates and client certificates for server discovery, client registration, token exchange, token refresh and cross-app (XAA) identity-provider sign-in.
+- 🟢 Fixed an interrupt from Remote Control only aborting the current request: it now cancels the session the way Esc does, including pending permission and input prompts, and lets queued messages go ahead.
+- 🟢 Fixed `/effort` in one session changing the effort of other open sessions (a settings-file change no longer resets a running session's effort), and made effort changes from an IDE or SDK host apply even when they match the previous settings value.
+- 🟢 Fixed subagents not getting the list of project, user and plugin skills they can call through the Skill tool.
+- 🟢 Listed `--remote-control` in `claude --help`.
+
+<details>
+<summary>12 internal changes</summary>
+
+- 🔴 Kept the first failure of the startup config read and rethrew it on later attempts, which used to return as if the config had loaded.
+- 🔴 Added the repository's current commit (`commitSha`) to feedback reports.
+- 🔴 Added counts of auto-mode allow, soft-deny and environment rules, and their total word count, to startup telemetry.
+- 🔴 Added the first 60 characters of the error (`errorPrefix`) to compaction-failure telemetry.
+- 🔴 Added `prompt_length` to a prompt telemetry event.
+- 🔴 Changed API-response telemetry to report the thinking length whenever a response has a thinking or redacted-thinking block, even when it's zero.
+- 🔴 Made the daemon's self-respawn after an upgrade log and report a failed spawn (`tengu_bg_daemon_spawn_failed`), where it used to start the new process without handling spawn errors.
+- 🔴 Stopped passing tombstone and tool-use-summary messages from forked helper agents to their callers.
+- 🔴 Moved the `action_after_plugins_init` mark in the startup timing log to when plugin loading starts instead of when it finishes.
+- 🔴 Made background-session terminals remember a requested size even when resizing the pseudo-terminal fails.
+- 🔴 Added a background-manager log line when a worker settles.
+- 🔴 Added a note to the SDK agent definition's `tools` description that passing `Skill` there is deprecated in favour of the `skills` field.
+
+</details>
+
+<details>
+<summary>7 changes with no effect in this build</summary>
+
+- 🔴 Added a Windows-only way to start the background daemon through WMI so it survives closing SSH or the terminal, falling back to a direct start; this build's platform check never reports Windows.
+- 🔴 Added a Windows-only delay of background-session terminal resizes until the worker is ready.
+- 🔴 Added Windows-only stripping of trailing dots and spaces from path segments in PowerShell permission checks.
+- 🔴 Added two SDK control-request schemas, for requests the agent loop sends and requests a client sends; nothing reads them.
+- 🔴 Added a `dispose()` method to the SDK query engine that clears its messages and caches and unregisters its memory reporting; nothing calls it.
+- 🔴 Added a test-only reset for the in-memory list of dead refresh tokens; nothing calls it.
+- 🟢 Added trust for Windows mapped network drives passed with `--add-dir` or SDK `additionalDirectories`; only drive-letter paths qualify, so Linux paths never do.
+
+</details>
+
+---
+
 ### 2.1.126 ◆◆◆◆
 
 - 🔴 Fixed `/effort` applying low, medium, high and xhigh only to the current session, whether typed or picked in its slider, although unlike `max` their reply didn't say "(this session only)"; they now save `effortLevel` to your user settings, `/effort auto` removes the saved level, and a failed write shows "Failed to set effort level: …".
 - 🟢 Raised the stream watchdog's idle limit from 90 seconds to 5 minutes without data before it aborts a response; background sessions turn this watchdog on (`CLAUDE_ENABLE_STREAM_WATCHDOG`), and `CLAUDE_STREAM_IDLE_TIMEOUT_MS` can still raise the limit but no longer set it below 5 minutes.
 - 🟢 Removed the reminder to consider whether each file is malware, and to refuse to improve it, that the Read tool appended to text files when the model was Claude 3.x, Sonnet 4 or 4.5, Opus 4, 4.1 or 4.5, or Haiku 4.5.
+
+---
+
+### 2.1.124 ◆◆◆◆
+
+- 🔴 Changed the default model on Mantle (`CLAUDE_CODE_USE_MANTLE`) to Opus 4.7, which `ANTHROPIC_DEFAULT_SONNET_MODEL` no longer overrides; before, the default was that variable's model or else Haiku 4.5, because Claude Code lists no Sonnet 4.5 model for Mantle and the Sonnet default fell back to the first model it lists there.
+- 🔴 Stopped sending `ANTHROPIC_AUTH_TOKEN` as an extra `Authorization: Bearer` header on Claude Platform on AWS and Mantle requests that authenticate with an API key.
+- 🔴 Ignored a `user_oauth` profile in the Anthropic config directory (named by `ANTHROPIC_PROFILE` or the active one) when its credentials file is missing, so Claude Code falls back to its other ways of signing in.
+- 🔴 Added a 10-second timeout to each token request made for workload identity federation and for `user_oauth` profiles in the Anthropic config directory.
+- 🔴 Stopped sending a cloud session's access token to every WebSocket MCP server and to HTTP ones without their own sign-in; it now goes only to MCP endpoints on the session's own ingress host.
+- 🔴 Made Bash permission checks stricter: backticks or `$(` that the parser leaves as plain text inside double-quoted strings, values produced at run time used as variable names by `read`, `unset`, `printf -v` and `wait -p`, and more forms of line continuation now need approval, and `printf` counts as read-only only with no options, no `$`, `\u` escapes or escapes inside a `%` conversion in its format, and plain numbers for numeric conversions.
+- 🔴 Made the inline Ctrl+R history search ignore letter case.
+- 🔴 Changed brief mode's reminder after a turn that ends without `SendUserMessage`: Claude is now told to send its reply without mentioning the reminder, and that it may end the turn without one if it has nothing useful to say; the reminder's wording can be replaced remotely.
+- 🔴 Changed brief mode's message view to show Claude's plain text for turns in which it didn't call `SendUserMessage`, instead of hiding it.
+- 🔴 Made the REPL tool (turned on with `CLAUDE_CODE_REPL`) throw an error when a script uses an unawaited shorthand result as text, and told Claude in its instructions that only `o.*` values are awaited automatically.
+- 🔴 Turned off prompt caching for the WebSearch tool's internal request and for tool-use summaries.
+- 🔴 Limited each auto mode classifier call to 2 retries, ignoring `CLAUDE_CODE_MAX_RETRIES`, and to 30 seconds in total, retries included.
+- 🔴 Left hidden system-generated user messages out of the conversation auto mode's classifier reviews.
+- 🔴 Stopped auto mode's reminders in the shorter system prompt mode (Opus 4.7 with `CLAUDE_CODE_SIMPLE_SYSTEM_PROMPT`, or its remote switch), and added a remote switch, off by default, that sends one "work without stopping for clarifying questions" reminder instead of the periodic ones.
+- 🔴 Added `CLAUDE_CODE_COLD_COMPACT` to force compaction's leaner mode on or off (it skips the cached conversation prefix and strips non-essential content; otherwise used only after 90 idle minutes behind a remote switch), and made `/compact` use it too.
+- 🔴 Made `/ultrareview` available only where Remote Control is: signed in with a claude.ai account, with Remote Control's remote switch on, and outside cloud sessions.
+- 🔴 Stopped `/effort` from saving the level to your user settings and `/effort auto` from clearing it; the level now lasts for the current session, and only the `/model` picker's effort control saves one.
+- 🔴 Made `/remote-control` and `claude remote-control` refuse to start on a device that isn't enrolled when the organization requires Trusted Devices, telling you to run `/login` to enroll it (behind a remote switch that's off by default).
+- 🔴 Saved the side a session is locked to under the organization's web-search-versus-connectors isolation policy in the transcript, so `--resume`, `--continue` and `/resume` keep it even when the tool call that locked it is no longer in the resumed conversation, such as after compaction (behind a remote switch that's off by default).
+- 🔴 Passed `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`, `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST`, `DISABLE_ERROR_REPORTING`, `DISABLE_GROWTHBOOK`, `DISABLE_TELEMETRY` and `DO_NOT_TRACK` on to agent-team teammates launched in terminal panes.
+- 🔴 Shortened the shorter system prompt's opening: it no longer says to use the instructions and tools to assist the user, or tells Claude never to generate or guess URLs.
+- 🔴 Removed the "background" label from the prompt footer of background sessions.
+- 🔴 Added "Fix with Claude" to the invalid-settings dialog at startup; it starts the session with a prompt asking Claude to fix the listed settings errors.
+- 🔴 Changed how `claude agents` loads pull request status: batches of 20 instead of 40, up to 6 batch queries at once, a 15-second timeout for those queries, last-known statuses kept when a batch fails instead of retrying each pull request, and statuses kept between openings of the view. Pull request URLs that can't be batched are now looked up in parallel instead of one at a time.
+- 🔴 Made renaming a session in `claude agents` report "Couldn't rename — the job may have been removed or its state file is unwritable." and undo the new name when saving fails.
+- 🔴 Changed rows in `claude agents`: a blocked job shows what it needs, a recently updated job's age ticks every second, counts are printed before their symbols, long group headers are cut to fit, and reactivating a job no longer replaces its detail line with your latest message.
+- 🔴 Changed the memory survey's question from "Did this help? (optional)" to "Did this memory help? (optional)".
+- 🔴 Changed how `/` command suggestions break near-ties: match scores are compared in steps of a tenth before the other ordering rules apply.
+- 🔴 Made pressing Enter on a highlighted directory suggestion for a command's argument submit the command as typed, where it used to only close the suggestions.
+- 🔴 Hid the Enter-to-view hint for MCP tasks in the background tasks dialog.
+- 🔴 Reset text colours and styles when an attached background session ends or you detach from it, so its styling can't carry over into your terminal.
+- 🔴 Added a `file_suggestions` control request for SDK hosts that returns matching file paths for a query.
+- 🔴 Added `origin` to SDK result messages, copied from the submitted message's `origin`.
+- 🟡 (2.1.319) Added `DISABLE_GROWTHBOOK` to turn off GrowthBook, the remote feature-flag service, without turning off analytics.
+- 🟡 (2.1.153) Made `claude agents` mark a job as crashed, saying its working directory no longer exists and it can't be respawned, when that directory has been deleted.
+- 🟡 (2.1.299) Made reloading plugins also re-read the list of installed plugins.
+- 🟡 (2.1.121) Changed MCP duplicate detection and endpoint-conflict checks to use the `mcp_url` target of cloud WebSocket proxy URLs, so a server behind `/v2/session_ingress/mcp/ws/` can match the same server configured directly.
+- 🟡 (2.1.200) Stripped ANSI escape sequences from job details, summaries and requests for input in `claude agents` before showing them.
+- 🟡 (2.1.126) Added gateway models to `/model` when `ANTHROPIC_BASE_URL` points at a non-Anthropic host on the first-party provider: at startup Claude Code fetches `/v1/models?limit=1000` (3-second timeout, needs `ANTHROPIC_AUTH_TOKEN` or an API key), keeps `claude*` and `anthropic*` ids, caches them in `~/.claude/cache/gateway-models.json` and lists them as "From gateway".
+- 🟡 (2.1.126) Added `claude project purge [path]` to delete a project's transcripts and memory folder, task lists, debug logs, file edit history, matching prompt history lines and `~/.claude.json` entry, with `--dry-run`, `-y`/`--yes`, `-i`/`--interactive` and `--all`.
+- 🟡 (2.1.126) Made `--dangerously-skip-permissions` (and plan mode when bypass is available) skip the safety-check prompts for writes to protected paths and for sandbox overrides; only `rm` and `rmdir` on critical system directories still ask.
+- 🟡 (2.1.126) Added code pasting to `claude auth login`: it prints "Paste code here if prompted > " and accepts the `code#state` value from the browser when the local callback can't be reached.
+- 🟡 (2.1.126) Made the OpenTelemetry `skill_activated` event fire for skills you run by typing their slash command, with a new `invocation_trigger` attribute (`user-slash`, `claude-proactive` or `nested-skill`).
+- 🟡 (2.1.126) Stopped marking a tool as running before its permission decision; it shows as in progress once it's actually dispatched.
+- 🟡 (2.1.126) Stopped Bedrock, Vertex and Foundry from turning off analytics and GrowthBook when `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST` is set.
+- 🟡 (2.1.126) Fixed `allowManagedDomainsOnly` and `allowManagedReadPathsOnly` being read only from the highest-priority managed settings source: either now applies when any managed tier sets it (remote, MDM, `managed-settings.json` and its drop-ins, or settings from a parent process), and allowed domains and read paths are collected from all of them.
+- 🟡 (2.1.126) Stopped passing oversized GIF, JPEG and WebP images through to the API when image processing fails; as with PNG, Claude Code now asks you to resize them. When the API rejects a many-image request because an image exceeds 2000 px, that image is replaced by a note and the request retried.
+- 🟡 (2.1.126) Changed the error for organizations that don't allow OAuth to "Your organization has disabled Claude subscription access for Claude Code · Use an Anthropic API key instead, or ask your admin to enable access", with its own code `oauth_org_not_allowed` for the SDK, hooks and background jobs, where it used to tell you to run `/login`.
+- 🟡 (2.1.126) Raised the OAuth code exchange and token refresh timeouts from 15 to 30 seconds and made the login callback server listen on 127.0.0.1 instead of `localhost`.
+- 🟡 (2.1.126) Fixed a refresh rejected with `invalid_grant` clearing a valid refresh token that another process had just saved; only the token that failed is cleared now.
+- 🟡 (2.1.126) Fixed the API retry countdown, which now counts down in whole seconds to the retry's scheduled time instead of running a timer from when the message appeared.
+- 🟡 (2.1.126) Fixed responses failing with "Stream idle timeout" right after the computer wakes from sleep: the stream and byte watchdogs now restart their wait when they fire after a suspend.
+- 🟡 (2.1.126) Slowed mouse-wheel scrolling in Cursor and in VS Code 1.92 to 1.104 integrated terminals: a wheel event now starts at 1 line instead of 3, with the milder acceleration other terminals get.
+- 🟡 (2.1.126) Stopped manually configured HTTP or SSE MCP servers that still need sign-in, or whose token expired with no refresh token, from hiding the matching claude.ai connector.
+- 🟡 (2.1.126) Changed `Ctrl+L` to redraw the screen without clearing the prompt input.
+- 🟡 (2.1.126) Gave subagents the list of deferred tools on their first turn when tool search is on, so tools such as WebSearch and WebFetch can be found from the start.
+- 🟡 (2.1.126) Fixed `ExitPlanMode`, `EnterPlanMode` and `AskUserQuestion` being turned off in interactive sessions with channels on; they're now off only in non-interactive ones.
+- 🟡 (2.1.126) Fixed `/plugin` answering an uninstall or update with "✓ Enabled …" (or, for a plugin with options, its options screen); it now reports the plugin as uninstalled or updated.
+- 🟡 (2.1.126) Stopped including diffs in "file was modified" reminders once 16,384 characters of them have been added in a turn; later files get a note to use Read instead.
+- 🟡 (2.1.126) Changed Remote Control failure notices to always show the error, report each retry's result, and announce "disabled after repeated failures · restart to retry" the same way; the footer's Remote Control indicator hides while there's an error.
+- 🟡 (2.1.126) Stopped the PowerShell tool's permission parser from treating a bare `--` (as in `git diff -- file`) as the `--%` stop-parsing token.
+- 🟡 (2.1.126) Fixed a hang when a finished tool result in a parallel batch had to wait behind a tool still running ahead of it (such as the error for a malformed tool name); the executor now waits for progress instead of looping.
+- 🟡 (2.1.129) Added a Ctrl+R "Search prompts" picker in fullscreen mode (`CLAUDE_CODE_NO_FLICKER` or the `tui` setting) that starts with the current project's prompts; Ctrl+S cycles session, project and everywhere, and remote sessions get a notice that it isn't available yet.
+- 🟡 (2.1.126) Stopped sending assistant turns that came back empty, which Claude Code records as `(no content)`, back to the model in later requests and resumed sessions; they're now dropped like blank turns.
+
+<details>
+<summary>7 internal changes</summary>
+
+- 🔴 Ran the startup notices (npm deprecation, marketplace, install messages, Chrome extension, model migration, subscription switch) from one list, moved the subscription notice's three-showings limit to a `seenNotifications` record copied from `subscriptionNoticeCount`, and raised the config migration version so migrations run once more.
+- 🔴 Renamed cloud sessions' upstream proxy to the egress gateway: `CCR_EGRESS_GATEWAY_ENABLED` turns it on as well as `CCR_UPSTREAM_PROXY_ENABLED`, its certificate and relay come from `/v1/code/egress/gateway` before the old `/v1/code/upstreamproxy` path, and its log lines say "[egress-gateway]".
+- 🔴 Limited post-turn status summaries for cloud sessions to remote workspaces or `CLAUDE_CODE_REMOTE` sessions started from the remote, remote desktop or remote mobile entry points, excluding bug-hunting fleets.
+- 🔴 Changed background session plumbing: a failed claim of a spare process reports the job-removal error, the daemon gives workers its sign-in snapshot only when it runs as a service, and adopting an already-running worker or attaching to it now counts as recent input, which keeps it from being retired as idle.
+- 🔴 Removed an experiment's alternative wording for the Read tool's `offset` and `limit` parameters.
+- 🔴 Moved the new `/init` flow from the remote switch `tengu_new_init` to `tengu_slate_harbor_experiment`; its longer description now shows only when `CLAUDE_CODE_NEW_INIT` is set.
+- 🔴 Stopped background sessions and agent-team teammates from saving their first prompt as the last session hint in `~/.claude.json`.
+
+</details>
+
+<details>
+<summary>17 changes with no effect in this build</summary>
+
+- 🔴 Added a callback that the spare worker's claim socket can run once it starts listening; its only caller doesn't supply one.
+- 🔴 Added an override that would make Remote Control always available; it's hard-coded off.
+- 🔴 Added a session flag set after `gh pr merge` (without `--auto`) or `gh pr close`, and an internal `doneMeansMerged` setting; nothing reads either.
+- 🔴 Added an `isolatePeerMachines` setting ("Require explicit approval before SendMessage can reach a peer session on another machine via Remote Control"); nothing reads it.
+- 🔴 Added a `from-name` attribute for messages sent to another session; no caller supplies a name.
+- 🔴 Added `ListPeers` as an old name for a `ListAgents` tool that this build doesn't contain.
+- 🔴 Added an option to draw the agent banner and prompt border as a multi-colour gradient, and a slot for a "pride" command; nothing sets the gradient and the command's module is `null`.
+- 🔴 Added an internal-builds-only `ccshare_url` field to the SDK's `submit_feedback` reply; it's never set.
+- 🔴 Added the `token-efficient-tools-2026-03-28` beta to the table of beta headers; nothing sends it.
+- 🔴 Made accepting a prompt suggestion discard a speculative run older than 30 seconds; speculation is hard-coded off.
+- 🔴 Recorded each MCP server's self-reported name on its tools; nothing reads it.
+- 🔴 Recorded whether Remote Control was connected when `/teleport` opens; nothing reads it.
+- 🔴 Added a helper that lists directory names from the file index, reachable only through the module's export object; nothing calls it.
+- 🔴 Added three empty placeholder functions, two of them called during start-up, and an unused constant `65001`; none of them does anything.
+- 🟡 (2.1.126) Added PowerShell 7 locations under Program Files, the Microsoft Store apps folder and .NET global tools to the PowerShell search, behind a Windows check that's never true in this Linux build.
+- 🟡 (2.1.126) Made the environment section describe PowerShell as the shell when the PowerShell tool is on, behind a Windows check that's never true in this Linux build.
+- 🟡 (2.1.126) Changed Windows clipboard writes to pass the text to PowerShell on standard input with no size limit, in a branch this Linux build never takes.
+
+</details>
 
 ---
 
