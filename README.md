@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 67 releases from 2.1.**112** to 2.1.**325**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 69 releases from 2.1.**112** to 2.1.**325**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -626,6 +626,64 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
+### 2.1.289 ◆◆◆◆
+
+- 🔴 Made Bash permission checks treat more `find` commands as unsafe: `-rm` (which the built-in `bfs` that runs as `find` reads as `-delete`), the option spellings `-sf`, `-xf` and `-df` that different versions of `find` read differently, and an action hidden behind `-D` or `-f` (whose following word used to go unchecked) now make the command ask instead of passing as read-only, under sandbox auto-allow or through a `Bash(find:*)` allow rule. The read-only check also splits a `find` command's words only at spaces and tabs now; `-rm` in the main checks sits behind a remote switch that's on by default.
+- 🔴 Stopped sandbox auto-allow from running `test`, `find`, `jobs` and `set` commands unprompted when an argument holds `<` or `>` or ends in a backslash, `test` commands with `$` in certain places, and `find` commands with a quoted option that takes a value (such as `'-name'`) or an unquoted glob in an option's value; they go through the usual permission check instead.
+- 🔴 Made a deny rule on the whole `Read` tool in settings also stop the files Claude Code reads by itself (@-mentioned files and folders, IDE selections and diffs, changed-file updates and other attachments), which only rules with a path stopped before; rules given on the command line don't count for this.
+- 🔴 Made the values a plugin's hooks return or answer with, and the arguments they pass to `next()` or to `$` methods, get copied as plain data when they cross out of the plugin's environment, so later changes inside the plugin can't reach the engine; a value that can't be copied is refused (for example "the answer is not plain data"). A remote switch that's on by default controls this.
+- 🔴 Added a `hook` field to the core permission decision a plugin's `tool.check` hook sees, naming the hook that decided it (`PreToolUse` when a hook's ask set the floor).
+- 🔴 Made `$.ui.selection()` answer in sessions the desktop app hosts: the session asks the attached clients that answer selection reads for what's selected in the app's page and takes the first selection that isn't empty.
+- 🔴 Added a "0 Dismiss" choice to the feedback cards of the built-in `cc-plugin-you-should-know` plugin (the ones offering "That was helpful"), which its explanation card already had; the plugin is off unless you enable it.
+- 🔴 Gave plugin toasts their own error handling: a toast that throws while drawn now hides the toast stack until the toasts change and tells the plugin's author ("ui.toast threw while drawn"), where the throw used to reach the interface's outer error handling.
+- 🟢 Made a deny rule that matches a nested part of a compound shell command hold against a user-installed plugin's approval where the built-in security default plugin runs (machines with managed settings, Team and Enterprise organizations): that plugin only holds deny decisions that name their rule, and the core decision plugins' `tool.check` hooks see now names a matching deny or ask rule at any depth of the command.
+- 🟢 Gave syntax highlighting a work budget tied to the text's length and a limit of 32 nesting levels, after which a block is drawn as plain text, so a short code block packed with unclosed `<script>` tags or nested `${` substitutions no longer hangs the terminal.
+- 🟢 Put the same highlighting budget into the highlight.js bundle that published artifact pages carry, so such code blocks no longer hang or crash a reader's browser tab.
+- 🟢 Made `Read` deny rules catch files and folders reached through symlinks when Claude Code reads them on its own (@-mentions, changed files, IDE selections and diffs): every path the links lead through is checked, and a mention that can't be checked in time isn't attached, with Claude told it couldn't be examined and the transcript showing "Referenced … (not read: could not be examined)".
+- 🟢 Made Bash deny and ask rules match the command itself when it follows an environment-variable assignment whose value expands, such as `TZ="$HOME" rm -rf build`, which they used to miss, with sandbox auto-allow and without it.
+- 🟢 Made sandbox auto-allow check deny and ask rules against the command itself also when the line holds one command preceded by a bare variable assignment.
+- 🟢 Counted the sign-in tools of an MCP server your organization manages as the organization's, so a plugin you installed can no longer rewrite their descriptions.
+- 🟢 Stopped `claude auth status` from waiting to send its usage event and flush analytics before it exits, taking back the 2.1.288 change that may have made sign-outs more frequent in VS Code.
+- 🟢 Let plugins' `agent.spawn` hooks see and change teammate spawns too (deny them, or rewrite their prompt, description, model or type, though not into a spawn a permission rule wouldn't allow or a type that can't be a teammate), gave each agent a single id across hook events plus a `teammateId` for teammates, made `$.agent.list()` report `idle` and `waiting`, and reworded the deny reason a hook gets when its `subagentType` names no agent the call can use (its ending "a fork names none" became "none is available").
+- 🟢 Made installed plugins' hooks modules load in the first session after an upgrade: when an earlier session saved the switch that turns them on as off, loading now waits briefly for a fresh answer, as it already did with no saved answer, and loads them late if the switch answers on after loading went ahead.
+- 🟢 Made `claude plugin list`, `plugin eval` and `plugin update` read a plugin installed from a local folder marketplace from that folder, where sessions already load it, instead of a stale copy (`claude plugin list` shows where each plugin is read from, and `/reload-plugins` says what it re-read from a folder), and made hot reload follow a symlinked `--plugin-dir`.
+- 🟢 Made `claude plugin validate`, given a folder that holds both a marketplace manifest and a `plugin.json`, also check the `plugin.json` and the folder's skills, agents and commands, where it checked only the marketplace; the `plugin.json` is held to the rules for an Anthropic marketplace's own plugin when such a marketplace lists the folder itself, and it's listed in the results only when it has something to report.
+- 🟢 Neutralized stray escape and C1 control characters in drawn text even when the text has no tab, which stops such text, and short tabbed text with Windows line endings, from writing over the rows beneath it.
+- 🟢 Drew a plugin's `Box` with a border style Claude Code doesn't know without a border, telling the plugin's author, where it used to freeze Claude Code or force it to quit at launch.
+- 🟢 Let terminal plugin links use destinations such as `file:` paths, uppercase hosts and an `@` in the path, where one such link used to leave the whole pane blank; on other surfaces, a destination that fails their address checks is drawn as plain text instead of hiding the pane.
+- 🟢 Made Claude Code draw its own row when a value a plugin's `ui.render` hook wrote makes the row throw while drawn, where the session used to end with "unrecoverable interface error".
+- 🟢 Kept a failing plugin `Client` from taking down the rest of what its plugin drew: it fails on its own and the plugin hears about it through a new `ui.fault` event, which SDK hosts such as the desktop app can raise too with a new `ui_client_fault` request.
+- 🟢 Let a plugin `Client` region recover after the terminal throws while drawing it, instead of staying failed for the rest of the session.
+- 🟢 Stopped rejected promises in plugin `Client` code from ending supervised and background sessions: a rejected promise a handler returns fails that Client, and one it doesn't return is reported without failing the Client.
+- 🟢 Stopped a plugin region with no height that keeps growing from ending the session with an interface error: a `Client` region that changes size at each of 8 measurings in one frame, or keeps the screen measuring for 20 passes, is drawn as last measured, and the plugin's author is told to give it a height and a width.
+- 🟢 Kept the close mark and `[-]` one column in from the terminal's edge and reserved their columns, so right-aligned content in a plugin's pane or band no longer draws underneath them.
+- 🟢 Stopped a plugin band whose drawing fails from briefly making the cards below it move out of its way.
+- 🟢 Stopped plugin rows above the prompt from showing an out-of-date row in fullscreen while the Background tasks dialog is open.
+- 🟢 Stopped a failed plugin component from showing `Error` or an empty reason when its failure carried no message.
+- 🟢 Made the notice a plugin's author gets when its band or pane fails to draw name the plugin and say what became of it: nothing was drawn for a band, and the pane was closed.
+- 🟢 Made large files open faster in a plugin's code pane: the highlighted view takes the pane's width from the start instead of being laid out again once the width is known.
+
+<details>
+<summary>6 internal changes</summary>
+
+- 🔴 Kept the artifact-page syntax highlighter's generated helper variables inside a function instead of the page's global variables; `hljs` stays available to the page.
+- 🔴 Added telemetry for plugin rows that throw while drawn, plugin toast stacks that fail, selection reads across clients, @-mentions refused by a symlinked `Read` deny, and errors caught by the plugin interface's error boundaries.
+- 🔴 Added a log line for a plugin hook whose rewrite was only partly applied ("the rest of its rewrite went on"), written as "hook" where skipped hooks say "hook skipped"; such a report doesn't count as a failed hook.
+- 🔴 Updated the plugin-authoring reference and the plugin API type declarations that ship with Claude Code to describe this release's plugin changes (teammates in `agent.spawn`, agent states, `ui.fault`, folder-read plugins, selection reads in the desktop app).
+- 🔴 Changed how highlighted code wraps colour resets in tokens that already hold one, without doubling the inner reset codes as before; it looks the same on screen.
+- 🔴 Made a plugin `Client` in the terminal ignore props in a late reply to its `surface.post()` once the Client has been mounted again.
+
+</details>
+
+<details>
+<summary>1 change with no effect in this build</summary>
+
+- 🔴 Changed the names that two empty checks in remote session setup refer to; they sit behind a constant false condition, so nothing runs them.
+
+</details>
+
+---
+
 ### 2.1.278 ◆◆◆◆
 
 - 🔴 Made auto mode let the local classifier decide a tool call the server-side classifier has no usable verdict for (the server reports its classifier unavailable for a reason other than being turned off, leaves the call out of its results, or reports the call unavailable for a reason other than a cut-off response), wherever that classifier runs with local fallback: Bedrock, Vertex, Foundry, Mantle, Claude Platform on AWS or Google Cloud, and Anthropic API connections through a proxy. Bedrock, Vertex, Foundry and Mantle sessions that had turned the server-side classifier on blocked such calls as classifier-unavailable before.
@@ -862,6 +920,23 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 <summary>1 change with no effect in this build</summary>
 
 - 🔴 Removed the internal narration exports `NARRATION_SUMMARY_LABEL` and `getSignatureBlockKind`; nothing in the build read them, and the label and the decoder are still used directly
+
+</details>
+
+---
+
+### 2.1.240 ◆◆◆◆
+
+- 🔴 Added a thinking display mode behind a remote switch that's off by default: thinking blocks the API tags as narration appear in the conversation, marked "(summarized)", where other thinking shows only in the transcript view or verbose mode. Requests then set `display: "updates"` on the thinking setting with the `thinking-display-updates-2026-08-18` beta (dropping the redact-thinking beta) when `CLAUDE_CODE_THINKING_DISPLAY_UPDATES` or a second remote switch also allows it, in interactive sessions on Anthropic's API that aren't signed in with a claude.ai subscription, on models with interleaved thinking and with no thinking display chosen.
+- 🔴 Added a one-time dialog offering Claude Opus 5 users at high effort to switch their default effort to medium ("Switch your default effort to medium?"); accepting saves medium as the default. It needs two remote settings that are off by default, one of them carrying the dialog's text, and doesn't appear when `CLAUDE_CODE_EFFORT_LEVEL` is set or in background, remote or teammate sessions.
+- 🔴 Started sending `narrationBlockCount`, the number of narration-tagged thinking blocks in the response, with every successful API request's telemetry; the field existed but was always left out.
+- 🟡 (2.1.251) Changed saving an effort level (`/effort`, the `/model` picker) to write one place only: the top-level `effortLevel` by default, where it also used to write a per-model `modelSettings` entry, or only the per-model entry behind a remote switch that's off by default, so each model keeps its own level.
+
+<details>
+<summary>2 changes with no effect in this build</summary>
+
+- 🔴 Added a test-only helper, `clearNarrationFlagLatchForTests`, that clears the cached narration-switch result; nothing in the build calls it.
+- 🔴 Changed an unused text-row renderer's formatter reference from a git working-tree cleanliness check to a git-root lookup. Nothing in the build calls that renderer.
 
 </details>
 
