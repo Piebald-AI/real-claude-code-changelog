@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 70 releases from 2.1.**112** to 2.1.**325**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 71 releases from 2.1.**112** to 2.1.**325**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -1120,6 +1120,119 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 - 🔴 Added `model_scoped` to `rate_limits` in the SDK `get_usage` reply: per-model weekly limits (name, utilization, reset time) taken from the server's limits for the models on a remote allowlist.
 - 🔴 Changed the usage-credit balance lookup to treat a reply without an amount as an unknown balance, so the Fable 5 usage-credits prompt no longer shows such accounts a zero balance when their usage credits are on, and the usage-credits screen shows their balance as "—" instead of "$NaN".
 - 🔴 Added an `enabled` field to the remote Fable usage-credits config (`tengu_saffron_lattice`); when it's `false`, the config no longer marks Fable 5 as needing usage credits.
+
+---
+
+### 2.1.187 ◆◆◆◆
+
+- 🔴 Changed refusal notices to read "<model>'s safeguards flagged this message" instead of "<model> has safety measures that flagged something in this session" (or, for cybersecurity and biology topics, "… that flag messages on most cybersecurity or biology topics"); the notices that switch, or offer to switch, to another model after a cybersecurity or biology refusal now add that the safeguards are intentionally broad right now and may flag safe and routine coding, cybersecurity, or biology work.
+- 🔴 Reworded the messages shown when a Fable 5 request needs usage credits ("You're out of usage credits …", "You've hit your monthly spend limit …", "You've reached your Fable 5 limit …") and dropped the "API Error:" prefix they carried.
+- 🔴 Made the "Now using usage credits" notice name the model and when its limit resets ("Now using usage credits for Fable 5 · Your Fable 5 limit resets …") when the server lists that model as drawing from credits; the list is empty by default.
+- 🔴 Stopped offering AskUserQuestion, EnterPlanMode and ExitPlanMode in non-interactive runs (`-p` and SDK sessions) unless a permission prompt tool is set (`--permission-prompt-tool`, or the permission channel of `--sdk-url`).
+- 🔴 Gave subagents that run in plan mode the ExitPlanMode tool when their tool list didn't include it.
+- 🔴 Made PostToolBatch hooks run when a tool result ends the turn (an MCP server's end-turn signal or a StructuredOutput call); their messages show, and a block they return is logged and dropped because the model isn't called again.
+- 🔴 Removed the "Meet Fable 5" launch notice, which showed only when a remote switch turned it on, and added a startup notice for announcements the server sends (`tengu_startup_announcements`, empty by default), each shown at most three times by default with `/command` names highlighted, and now always tells the VS Code extension not to show its own Fable 5 launch notice (`fable5_launch_show` is false).
+- 🔴 Changed the Artifact tool to tell Claude it must load the `artifact-design` skill first to judge how much design a request warrants, and rewrote that skill around plain versus editorial treatments ("Design guidance and fundamentals for Artifacts"); Artifacts sit behind a remote switch that's off by default and are offered only to claude.ai logins on Team or Enterprise plans (or whose plan isn't known).
+- 🔴 Changed Artifacts further: published ones are recorded in the session and show as "⧉" links on the job's card in `claude agents`, subagents keep the tool's result, the Explore and Plan agents can't use the tool, and a missing file now says "Create the file first (Write tool, or via shell if Write is unavailable), then retry with the same path."; same gate as above.
+- 🔴 Added a one-time warning when the advisor is on but the main model isn't in the advisor capability table ("Advisor disabled — base model '…' isn't in the advisor capability table …").
+- 🔴 Made the `claude agents` view follow the `tui` setting: with `tui: "default"` it no longer switches to the full-screen alternate screen.
+- 🔴 Made the `claude agents` view offer agents from plugins as templates, not only your own and project agents.
+- 🔴 Stopped counting memory-consolidation ("dreaming") tasks as background work still running, for example in the "Detached — N tasks still running" message.
+- 🔴 Added a note to auto mode's "could not evaluate this action" block when an upstream safety filter refused the classifier's own request: the block is "not a verdict on this action".
+- 🔴 Stopped telling Claude after an auto-mode denial that the user can add a Bash permission rule when managed settings allow only managed permission rules (`allowManagedPermissionRulesOnly`).
+- 🔴 Added a Claude in Chrome classifier floor (`CLAUDE_CHROME_CLASSIFIER_FLOOR`, or a remote switch that's off by default): Chrome tool calls that an allow rule, an allowed site or bypass-permissions mode would let through are then checked by the auto-mode classifier when it can run, and go to the normal permission handling when it can't.
+- 🔴 Let SDK hosts pin an MCP server's tools to `auto` through `set_mcp_permission_mode_override` when auto mode is available, and store an override for a server name that isn't configured or connected yet, with a warning, instead of rejecting it.
+- 🔴 Added an `add_directory` control request for SDK hosts of cloud sessions: it downloads the file at a mounted path and adds the folder holding it to the working directories (needs `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD`); staging a file now fails on an HTTP error reply instead of carrying on.
+- 🔴 Made skills that an SDK host's MCP servers publish as resources show up as commands in the session, and go away when the server is removed; MCP skills sit behind a remote switch that's off by default.
+- 🔴 Made an MCP tool result that fails schema validation report 'MCP server "<name>" returned a malformed result that failed schema validation: …' instead of the raw validation error.
+- 🔴 Let `--tools` take `preset:default` next to other names, meaning every default tool plus the ones listed.
+- 🔴 Stopped `CLAUDE_CODE_INCLUDE_PARTIAL_MESSAGES` from making runs other than `-p --output-format stream-json` exit with the "--include-partial-messages requires …" error; the variable is now ignored there, and the error stays for the flag.
+- 🔴 Made the Read tool open files without an extension as images when their first bytes are an image signature.
+- 🔴 Tightened GIF detection to require a full `GIF87a` or `GIF89a` header instead of any data starting with "GIF".
+- 🔴 Made the in-session surveys answered with a number key (such as "How is Claude doing this session?") accept the AZERTY digit row (`&`, `é`, `"`, `'`, `(`, `-` or `§`, `è`, `_`, `ç`, `à` for 1 to 0).
+- 🔴 Recognized the keypad's arrows, Home, End, Page Up, Page Down, Insert, Delete and separator keys from terminals that use the kitty keyboard protocol.
+- 🔴 Changed Bash permission checks of piped commands to strip output redirects to quoted or variable targets (`> "out.txt"`) from each segment before matching rules, as they already did for bare file names.
+- 🔴 Stopped turning en and em dashes into hyphens in PowerShell redirect targets when checking where a command writes (PowerShell tool, opt-in on Linux).
+- 🔴 Made Bash commands that assign `HISTCHARS` or `histchars` count as setting a dangerous variable, like `PATH` or `BASH_ENV`.
+- 🔴 Extended the sandbox's write protection of `.git/config` to its `config.lock` file (and to `.git/config.worktree.lock` in GitHub Actions).
+- 🔴 Made the Linux sandbox hide the real file behind a symlink listed in a read-deny rule, instead of masking the link's own path.
+- 🔴 Stopped turning backslashes into slashes in project paths on Linux, so a folder whose name contains a backslash keeps its own trust and project settings.
+- 🔴 Stopped FileChanged hooks from watching paths that start with two slashes or backslashes (network-share style paths other than WSL's).
+- 🔴 Made worktrees created by a WorktreeCreate hook fall back to `git worktree remove` on exit when no WorktreeRemove hook is configured, instead of being left in place. When a configured removal hook leaves the folder in place, ExitWorktree and the exit dialog now report that it was kept instead of reporting a successful removal.
+- 🔴 Changed automatic naming of background jobs to wait for the job's pending state writes before saving the name, and to use text the job sent through a `CLAUDE_CODE_TERMINAL_MCP_TOOLS` tool as its reply when its reply has no text; a job started from the default `claude` agent that has no name or prompt words yet now shows "new session" while working, as `bg` jobs already did.
+- 🔴 Removed the built-in list of Slack bot MCP tools (`mcp__slackbot__reply` and others) that marked a turn as finished; only tools named in `CLAUDE_CODE_TERMINAL_MCP_TOOLS` do now, and a turn ending with one no longer gets the "no visible output" nudge.
+- 🔴 Kept the `claude agents` supervisor running when its roster file can't be written because the disk or the file-descriptor limit is full.
+- 🔴 Clarified the subagent instruction against writing report files: files written as input to another tool are fine.
+- 🔴 Gave DesignSync's authorization errors their own wording for headless sessions such as claude.ai/code and told the `/design-sync` skill to pass the tool's message on word for word; the hint that `/login` with a Claude subscription also grants design access is gone.
+- 🔴 Added a usage line to skill details in `/plugin`: how many times the skill ran and when it was last used, or "never invoked".
+- 🔴 Made `-p` and SDK sessions start a turn right away for a prompt that's already queued when the session begins reading input, or when a duplicate incoming message is skipped, instead of waiting for the next message to arrive.
+- 🔴 Made background sessions started with memory switched off (`CLAUDE_BG_MEMORY_TOGGLED_OFF=1`) say memory is "paused" when a memory read or write is blocked, and show a "Memory · Paused for this session" row in the status panel and "memory paused" in the footer.
+- 🟡 (2.1.214) Made a `claude agents` supervisor that another one has replaced step aside without deleting the new one's socket.
+- 🟡 (2.1.325) Fixed brief mode's reply check counting a tool result that lacks display metadata as a new user request, which made it ask for another reply after one had already been sent.
+- 🟢 Added the `sandbox.credentials` setting: files listed with `mode: "deny"` can't be read inside the sandbox, listed environment variables are unset for sandboxed commands, and an invalid block is dropped with a warning that no credential protection applies until it's fixed.
+- 🟢 Added org model restrictions from the account's model entitlements (first-party and gateway sessions): a restricted model is refused with "Model '…' is restricted by your organization's settings. Run /model to choose a different model.", skipped for plan-mode upgrades and in the model picker, and the default model steps down to an allowed one.
+- 🟢 Added mouse clicks to select menus: clicking an option picks it and hovering shows a pointer (clicks need mouse tracking, as in fullscreen mode).
+- 🟢 Fixed `--resume` finding no conversation after a `-p` run that produced no model turns: the session file is now created for system entries too.
+- 🟢 Fixed structured output: a successful StructuredOutput call now ends the turn instead of letting the model call it again, and one reminder replaces the stop-hook nudges when the call is missing, in `--json-schema` runs, workflow `agent({schema})`, hook agents and background jobs (which no longer stay "working"). When reply text is empty, SDK results now also put the structured output's JSON in `result`.
+- 🟢 Added an idle timeout for tool calls to remote MCP servers (HTTP, SSE, WebSocket and claude.ai connectors): no response or progress for 5 minutes aborts the call with an error; `CLAUDE_CODE_MCP_TOOL_IDLE_TIMEOUT` (milliseconds, 0 turns it off) changes it, and open elicitations pause it.
+- 🟢 Fixed Claude Code Remote sessions waiting for the agent proxy's system certificate install before starting; it now runs in the background.
+- 🟢 Fixed non-ASCII text, such as pasted Korean or CJK, turning into mojibake in terminals that send each UTF-8 byte as a separate kitty-protocol or modifyOtherKeys key event.
+- 🟢 Fixed a session restarted to reattach Remote Control (as `/update` does) stopping at onboarding or trust dialogs; it now skips them, as background sessions do.
+- 🟢 Fixed channel connections dropping when Claude Code restarts itself (`/bg`, `/tui`, `/update`, the agents view): `--channels` is now passed to the restarted process.
+- 🟢 Fixed agent stop notifications to say who stopped the agent ("was stopped by Claude", "was stopped by user") and reworded them ("finished", "failed:" instead of "came to rest").
+- 🟢 Fixed subagent depth tracking so resumed subagents keep their depth and forked ones count toward the five-level nesting limit, and an agent past that limit that still calls the Agent tool is refused with "Subagent nesting limit reached …".
+- 🟢 Fixed leaked agent worktree registrations: cleanup now removes locked agent worktrees whose folder is gone and whose owning process has ended.
+- 🟢 Listed `--bg`/`--background` in `claude --help`; the flag already worked.
+- 🟢 Fixed Esc, Ctrl-C and Ctrl-D not working while `/share` is uploading.
+- 🟢 Made GitHub Actions setup optional in `/install-github-app`: after the app installs you can skip the workflow and secret steps and run the command again later.
+- 🟢 Added ←/→ to `/btw` to step through earlier answers.
+- 🟢 Turned on unused-plugin hints for everyone (they were behind a remote switch that's off by default): a tip names plugins you haven't used for 14 days and 10 sessions, `/plugin` groups them as "not used in N days", and plugin details show "Last used".
+- 🟢 Made loading a large session's messages pause regularly for other work instead of blocking until it's done.
+
+<details>
+<summary>18 internal changes</summary>
+
+- 🔴 Stopped publishing an empty post-turn summary when a turn has no assistant text.
+- 🔴 Made the Artifact tool's reads of an existing artifact tell claude.ai they come from the model (`?via=model_read`).
+- 🔴 Made the end-turn step rerun the session summary, instead of reusing the stored one, when the turn's reply went through a `CLAUDE_CODE_TERMINAL_MCP_TOOLS` tool.
+- 🔴 Made the `claude agents` supervisor delete the folder of a worker started from the spare pool when it exits without writing its state.
+- 🔴 Added telemetry fields: subagent type and built-in flag on tool events, the OAuth error description, sandbox state on Bash events, adopted shell, agent, workflow and cron counts, the fabrication detector's tail marker with request and message ids, the skill name on API events and a carry-over count; two Bash events also go to a second first-party analytics sink, and whether an auto-mode decision concerns a Chrome MCP tool (`chromeAutomode`).
+- 🔴 Made the policy-limits eligibility check say why a session isn't eligible (third-party provider, custom base URL, no login, no inference scope, consumer plan), for telemetry.
+- 🔴 Kept the account's server-sent client data per entrypoint, model, version and organization (up to 12 sets, refreshed after a day) and refetched it when the model changes or no set exists yet for the current combination.
+- 🔴 Let the server-sent auto-compact windows differ by entrypoint and subscription plan.
+- 🔴 Made the git and global-config file watchers catch and log errors instead of letting them escape.
+- 🔴 Removed abort listeners from parent signals once the child signal is garbage-collected.
+- 🔴 Sped up the file index behind `@` suggestions: git path normalization is cached while git's output is unchanged and pauses for other work, and results computed across a cache reset are dropped.
+- 🔴 Changed team memory sync to skip files inside dot-folders and ignore its own `.memory-sync` files; a manifest that keeps two stores from mixing sits behind a remote switch that's off by default.
+- 🔴 Made background agents restarted after an interruption drop the rest of an assistant reply whose tool calls never completed.
+- 🔴 Made resuming from a transcript file path load it as a full session (title, tag and other saved details), and restored the last prompt and conversation leaf from the session's saved metadata.
+- 🔴 Made the main screen reset the current session's transcript in the shared store each time it mounts, instead of keeping an existing one.
+- 🔴 Made a session function hook registered again with the same id replace the earlier one instead of stacking.
+- 🔴 Changed workflow logs and labels to show objects as `[object]` and functions as `[function]`, and added progress, total tokens and tool calls to a finished workflow's result record.
+- 🔴 Treated the memory-extraction side query like the other background side queries (no "no visible output" nudge, no reactive compaction, no prompt-too-long event), and changed some debug logs (path redaction in error text, an `mcp add-json` invalid-JSON line).
+
+</details>
+
+<details>
+<summary>15 changes with no effect in this build</summary>
+
+- 🔴 Added a helper to flush and replace team-memory stores and remove old mount folders, plus a test helper for inspecting the current stores. Nothing in the build calls them.
+- 🔴 Added a helper that copies the current session's metadata into an object. Nothing in the build calls it.
+- 🔴 Renamed the disabled `/toggle-memory` command to `/pause-memory` (with `memory-pause` and `toggle-memory` as aliases) and reworded its own replies to say memory is "paused" and "resumed"; the command's enable check always returns false, so the command can't be used.
+- 🔴 Added `allow_context_tips` to the policies HIPAA organizations have off; nothing in this build asks for that policy.
+- 🔴 Removed the Claude Code Desktop upsell dialog ("Open in Claude Code Desktop", "Not now", "Don't ask again"); its enable check always returned false.
+- 🔴 Removed the "verify plan" reminder attachment; its generator always returned nothing.
+- 🔴 Removed an automatic permission to write "wiki files"; the check behind it always returned false.
+- 🔴 Removed the `verification_agent` query source from internal lists; nothing set it.
+- 🔴 Removed a startup warning about allow rules "not available for Ants" and added an internal deny-rule list; the warning's list was always empty, and so is the new one.
+- 🔴 Added an embedded layout for the main session screen (fixed height, cancel hook from outside); nothing renders it that way.
+- 🔴 Let cloud-session creation pass an appended system prompt and an output schema; no caller sets them.
+- 🔴 Added `setMcpPermissionModeOverride` to the bundled SDK client; nothing calls it.
+- 🔴 Removed the pending plan-verification state set after a plan was accepted; it was always off.
+- 🔴 Added a plugin "Usage" view listing each skill's approximate tokens per turn; nothing opens it.
+- 🟢 Fixed Cmd+click on URLs in fullscreen mode in Ghostty on macOS; the check requires macOS, so it never applies in this build.
+
+</details>
 
 ---
 
