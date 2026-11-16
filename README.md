@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 74 releases from 2.1.**111** to 2.1.**325**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 75 releases from 2.1.**111** to 2.1.**325**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -1332,6 +1332,102 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 ### 2.1.148 ◆◆◆◆
 
 - 🟢 Fixed Bash tool commands failing with exit code 127 for some users since 2.1.147: the shell snapshot again leaves out shell functions whose names start with a single underscore (two underscores are still kept), which also undoes 2.1.147's fix for aliases that call such functions.
+
+---
+
+### 2.1.143 ◆◆◆◆
+
+- 🔴 Let prompt-based Stop and SubagentStop hooks end the turn when their evaluator judges the condition impossible in this session; for `/goal` this also clears the goal and shows an error mark, "Goal could not be achieved" and the evaluator's reason.
+- 🔴 Stopped notifying you when a plan waits for approval: plan approval now uses the same dialog as other permission prompts, which sends neither the "Claude Code needs your approval for the plan" notification nor a `permission_prompt` Notification hook event. The waiting reason each session writes to its file in `~/.claude/sessions` now reads "permission prompt" whenever any dialog is open (before: "approve ExitPlanMode" for a plan and usually "input needed" otherwise); nothing in this build displays that field.
+- 🔴 Retried a streaming response up to twice, after 100 and 200 ms and with a retry notice, when its connection drops (ECONNRESET, EPIPE or closed by the server) before the first event arrives.
+- 🔴 Made the Bash permission check ask before running a command with an argument that starts with `-` or `--` and contains text only known at run time (from `$(…)` or a variable), or a `cat` heredoc substitution that would make an argument start with option syntax; read-only commands also stop being approved without asking when any of their arguments comes from a command substitution or a variable.
+- 🔴 Kept the remote session when a connection error switches Remote Control off, so turning Remote Control back on in the same conversation reconnects to that session (not after `/clear`); while that session is kept for reconnecting, an exit cleanup is registered to archive it.
+- 🔴 Added team memory sync across several mounted memory stores, configured with `CLAUDE_MEMORY_STORES` (a JSON list of stores; read-only mounts are supported), behind the team memory remote switch, which is off by default.
+- 🔴 Added `CLAUDE_ENABLE_BYTE_WATCHDOG_BEDROCK`, which applies the stalled-stream watchdog (it ends a response that stops sending bytes) to Bedrock responses; off by default.
+- 🔴 Added an optional `displayName` to plugin manifests, shown in place of the plugin name in `/plugin` screens, install and enable messages, plugin command descriptions and `claude plugin details`, and matched by plugin search; channel configuration headings now fall back to the server name for a blank display name, and MCP bundle configuration headings use the bundle's display name when it has one.
+- 🔴 Added spinner tips suggesting a plugin from the official marketplace when that plugin's new `relevance` signals (commands you ran, file paths, dependencies in package manifests) match your work, for anyone who has that marketplace added.
+- 🔴 Added a notice before `/autofix-pr` starts, shown until you first choose "Continue", saying auto-fix can post comments on your behalf with your GitHub identity ("Not now" cancels).
+- 🔴 Extended guest passes (`/passes`, its spinner tip and its upsell) to Claude Pro subscribers; the server still decides who's eligible.
+- 🔴 Made background requests that ask the model for JSON, such as session titles and names, memory selection, cloud task titles, prompt hooks and `/goal` checks, accept an answer wrapped in a Markdown code fence instead of failing to read it.
+- 🔴 Changed which skill the Skill tool uses when two share a name: it now prefers one Claude may invoke over one marked `disable-model-invocation`, also when no MCP prompts are loaded. In that case a skill stub marked with the internal `fallback: true` now also gives way to a plugin or bundled skill with the same name.
+- 🔴 Added an optional question, "what made you switch back?", when `/tui default` leaves fullscreen in a session that `/tui fullscreen` restarted or where a remote rollout turned fullscreen on; a typed answer is sent to Anthropic as feedback.
+- 🔴 Made `/tui` say "Couldn't switch renderers — … The setting was saved; restart Claude Code to apply it." when Claude Code can't restart itself.
+- 🔴 Made `/insights` save each report as `report-YYYY-MM-DD-HHMMSS.html` beside `report.html` and point to the dated copy.
+- 🔴 Made the startup cleanup delete `/insights` data under `~/.claude/usage-data` (reports, facets and session metadata) older than `cleanupPeriodDays`, 30 days by default.
+- 🔴 Reworded the last line of the `/feedback` consent screen to "We may use these to debug related issues and improve Claude Code."
+- 🔴 Stopped `--fallback-model` failing when it names the same model as `--model`; the fallback is dropped instead.
+- 🔴 Stopped a stashed prompt from replacing text you typed in the meantime when it's put back after a submission or an immediate slash command; it now returns only to an empty input box.
+- 🔴 Hid the "← for agents" hint in the prompt footer while a footer item is selected.
+- 🔴 Moved plan approval into its own scrolling dialog with the choices below the plan: in fullscreen mode it no longer hides the sticky prompt header or the "new messages" pill, and its question always reads "Claude has written up a plan and is ready to execute. Would you like to proceed?", where the fullscreen sticky footer used to ask only "Would you like to proceed?".
+- 🔴 Made Escape keybindings respect Alt/Meta: an Escape event carrying that modifier now matches an Alt/Meta+Escape binding instead of plain Escape.
+- 🔴 Made `claude agents` refuse extra positional arguments instead of ignoring them.
+- 🟢 Ended a turn with a warning when a Stop or SubagentStop hook blocks it more than 8 times in a row; `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` changes the limit (0 turns it off).
+- 🟢 Skipped `/goal` evaluation when a turn ends while background shells or delegated subagents are still running.
+- 🟢 Added plugin dependency checks: disabling a plugin that another enabled plugin needs is refused with a ready-to-paste `claude plugin disable … && …` command, and enabling a plugin also enables its dependencies, refusing when one is missing, blocked by your organization's policy or disabled at a higher-precedence scope.
+- 🟢 Added a "Context cost" section to plugin details when browsing `/plugin`, estimating the tokens a plugin adds every turn and when invoked, marked "(estimated)" when worked out from component sizes and highlighted from 2,000 every-turn tokens.
+- 🟢 Added `worktree.bgIsolation: "none"` (also read from `CLAUDE_BG_ISOLATION`), which lets background sessions edit the working copy directly instead of requiring `EnterWorktree` first.
+- 🟢 Made the PowerShell tool start PowerShell with `-ExecutionPolicy Bypass` unless `CLAUDE_CODE_POWERSHELL_RESPECT_EXECUTION_POLICY` is set; on Linux the tool is used only when `CLAUDE_CODE_USE_POWERSHELL_TOOL` turns it on.
+- 🟢 Stopped deleting a worktree folder with `rm -rf` when `git worktree remove` fails: the folder is kept, and exiting a worktree or deleting a background job now says where it was kept.
+- 🟢 Made a `.credentials.json` whose `scopes` isn't a list count as having no scopes; before, a text value was searched as text and an object or number threw an error that could hang startup or abort OAuth token refresh.
+- 🟢 Changed the hint after 429, 529 and 5xx errors to name what to check: status.claude.com on Anthropic's own endpoint and Claude Platform on AWS, "your inference gateway (<host>)" with a custom `ANTHROPIC_BASE_URL`, and the provider's service status on Bedrock, Vertex AI, Foundry, Mantle and gateways (before, custom endpoints and gateways were sent to status.claude.com and the cloud providers got no hint).
+- 🟢 Made `NO_COLOR` and `FORCE_COLOR` from the settings `env` apply only to commands Claude Code runs, no longer to its own interface colours.
+- 🟢 Made Esc and Ctrl+C cancel a pending `/loop` wakeup while Claude is idle between iterations.
+- 🟢 Made right-click in fullscreen mode on WSL copy the selection, or paste the clipboard when nothing is selected.
+- 🟢 Put auto mode in the Shift+Tab cycle of sessions already running in auto mode, such as attached agent sessions, even where auto mode isn't otherwise offered.
+- 🟢 Kept the model and effort level you set when a background session is retired and later woken.
+- 🟢 Made `/bg` and ← detach pass `--settings`, `--plugin-dir`, `--add-dir`, `--mcp-config`, `--strict-mcp-config`, `--fallback-model` and `--allow-dangerously-skip-permissions` on to the background session.
+- 🟢 Stopped `/bg` without a prompt sending "continue" to the background session, which now waits for input; the command shows a `[prompt]` hint, and its description now reads "Send this session to the background and free the terminal" (it was "Continue this session in the background and free the terminal").
+- 🟢 Added `--add-dir`, `--plugin-dir`, `--settings`, `--mcp-config` and `--strict-mcp-config` to `claude agents` for the sessions it dispatches; `--plugin-dir` and `--settings` also apply to the agent view itself.
+- 🟢 Changed `claude agents --allow-dangerously-skip-permissions` to make bypass-permissions mode available to dispatched sessions instead of starting them in it; the view's defaults line shows "bypass available".
+- 🟢 Stopped background sessions launched from `claude agents` starting in auto mode, so they follow `permissions.defaultMode` from settings.
+- 🟢 Made `--agent <name>` find a plugin's agent without its `plugin:` prefix.
+- 🟢 Made deleting a session from the agent view also delete its transcript file.
+- 🟢 Stopped background sessions reporting false worker stalls after the computer sleeps.
+- 🟢 Stopped background sessions connecting to your IDE on their own, which could put IDE file references into the next prompt dispatched from `claude agents`.
+- 🟢 Made the background service fall back to the running Claude Code binary when the `claude` launcher it starts is missing or not executable.
+
+<details>
+<summary>19 internal changes</summary>
+
+- 🔴 Made WebSearch's API telemetry read the current permission context instead of the one saved when the search began, and made auto-mode classification read the current deny rules after an awaited permission check instead of an earlier copy. The mode sent to `UserPromptSubmit` hooks is also read after input processing, so a change made during image conversion, attachment loading or slash-command expansion reaches the hook's `permission_mode` field.
+- 🔴 Cached successful plugin-catalog loads for the session, sharing one lookup between install counts and context-cost details; a failed download can be tried again.
+- 🔴 Counted connections closed by the server (`ConnectionClosed`) as stale connections like ECONNRESET and EPIPE, so the API retry after one opens a fresh client (and the remote keep-alive fallback, off by default, applies), and shortened the matching log line.
+- 🔴 Cached the asynchronous read of saved claude.ai credentials, clearing it together with the existing token cache.
+- 🔴 Kept a token's real OAuth scopes when background sessions restore credentials from their snapshot or the background service refreshes them, and when cloud sessions refresh from their token file, instead of assuming `user:inference`.
+- 🔴 Made exit cleanup steps run only once even when shutdown and a restart both trigger cleanup.
+- 🔴 Registered removal of the session plugin cache (where ZIP, URL and inline plugins are unpacked) in every session that creates it, not only after headless plugin installs.
+- 🔴 Added a remote switch (`tengu_ccr_v2_send_events_cli`, off by default) that sends Remote Control permission responses to the newer `/v1/code/sessions/…/events` endpoint.
+- 🔴 Made remote SDK sessions (started with an SDK URL) print `SDKStartup:` startup phases and connection diagnostics to standard error, and widened what `CLAUDE_CODE_TEE_SDK_STDOUT` copies (the result message without its text, and the init message).
+- 🔴 Made cloud workers ignore a leftover "archived" end-session request from an earlier run of the same session.
+- 🔴 Stopped the team memory watcher pushing after pushes were suspended for the session, or when nothing changed.
+- 🔴 Passed a new remote switch, `tengu_vellum_siding` (off by default), to the VS Code extension.
+- 🔴 Let SDK feedback requests give `ide` as where they came from.
+- 🔴 Added system error codes to the failure reasons and telemetry of background-session spawns.
+- 🔴 Counted background workers respawned after an upgrade separately from dead ones in the background service's startup log and telemetry.
+- 🔴 Switched spinner and animation timing to a monotonic clock started when the clock is created.
+- 🔴 Drew the plan-approval dialog in the experimental scroll-region renderer (`CLAUDE_CODE_DECSTBM` or a remote switch, off by default) as the existing padded overlay, without the permission-coloured rule above it.
+- 🔴 Recorded the git commit of a plugin's source folder when updating a plugin from a local marketplace.
+- 🟢 Cached each process's start time for up to 60 seconds when background sessions check that their processes are alive (on Linux, fewer reads of `/proc/<pid>/stat`).
+
+</details>
+
+<details>
+<summary>12 changes with no effect in this build</summary>
+
+- 🔴 Added an asynchronous reader for saved plugin options and secrets, with a cache that's cleared when options change; nothing calls it.
+- 🔴 Added a "share" mode to the `/feedback` dialog for posting the conversation through a shareable link; the dialog is never opened in that mode.
+- 🔴 Added a "remote workflow" kind of cloud task, with its own completion text and "N remote workflows" label; nothing creates one.
+- 🔴 Added pausing for workflow tasks (a pause action in the tasks dialog, a paused icon and a `paused` task status in the SDK schema); the workflow module is absent, so nothing can pause a task.
+- 🔴 Added an internal `role` field (`"comms"`) to MCP server configs and the SDK server schema, copied onto MCP tools; nothing reads it.
+- 🔴 Added asynchronous versions of 24 account helpers (subscription type and name, plan checks, the API key and its source, account information); nothing calls them.
+- 🔴 Rewrote the bundled `verify` skill's instructions (handles branches without an upstream and uncommitted changes, asks for the scope outside a repository, adds a rule against driving destructive paths live); the skill isn't registered in this build.
+- 🔴 Changed the macOS Option-key character lookups to match only their own entries; that code runs only on macOS.
+- 🟡 (2.1.157) Added output-style and channel templates (an MCP server with `server.ts` and `package.json`) to the plugin scaffold, and a local example server to its `.mcp.json`; no command reaches the scaffold in this build.
+- 🟢 Made background sessions on Windows start with `CLAUDE_CODE_NO_FLICKER=0` unless that variable is already set (before, only over SSH); Windows only.
+- 🟢 Woke standard input on Windows when the agent view takes over again after an attached session, so the list keeps responding; Windows only.
+- 🟢 Made background jobs on macOS relaunch themselves as their own responsible process, so reading files under `~/Documents`, `~/Desktop` or `~/Downloads` stops failing with "Operation not permitted"; macOS only.
+
+</details>
 
 ---
 
