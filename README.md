@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 77 releases from 2.1.**111** to 2.1.**325**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 78 releases from 2.1.**111** to 2.1.**325**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -1500,6 +1500,101 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 ### 2.1.148 ◆◆◆◆
 
 - 🟢 Fixed Bash tool commands failing with exit code 127 for some users since 2.1.147: the shell snapshot again leaves out shell functions whose names start with a single underscore (two underscores are still kept), which also undoes 2.1.147's fix for aliases that call such functions.
+
+---
+
+### 2.1.145 ◆◆◆◆
+
+- 🔴 Added the bundled `/run` skill, which launches and drives the project's app to show a change working; it first looks for a project skill that already covers launching, then falls back to built-in patterns for CLIs, servers, desktop and browser apps, libraries and terminal UIs.
+- 🔴 Added the bundled `/run-skill-generator` skill, started only by the user, which writes or improves a project's `run-<unit>` skill under `.claude/skills/` from a template and checks the steps from a clean environment.
+- 🔴 Made the bundled `/verify` skill available, as a command and for Claude to use on its own: it builds and runs the app and observes the change instead of running tests. Its files already shipped but weren't registered.
+- 🔴 Added a spend-limit dialog for organizations that reach their monthly usage-credit limit with credits left: raise the monthly limit in $5 steps with ←/→ or remove it, wait for the reset, or upgrade to Max (Max 20x for Max subscribers), and the limit notice reads "You've hit your monthly spend limit" (remote switch, off by default; not for Team or Enterprise).
+- 🔴 Added server-sent notes (`model_notices` in the account's client data) after the description of matching `/model` choices.
+- 🔴 Changed the usage-limit message on plans with session or weekly limits: when usage credits aren't available, it names the limit reached (session, weekly, Opus or Sonnet) instead of the reason credits are unavailable.
+- 🔴 Made `claude remote-control` reuse its environment when restarted in the same folder within about four hours of stopping it, so claude.ai/code sessions from the previous run reconnect; stopping it leaves the environment registered ("Environment preserved…"), and an expired one prints a warning and starts fresh.
+- 🔴 Made `/color default` and Remote Control sessions fall back to the color of the session's agent definition, and the prompt border shows the agent's name when a session color is set; agent-view sessions started from an agent definition record its color.
+- 🔴 Changed auto mode's reminders to Claude: one short note when auto mode turns on ("Work without stopping for clarifying questions…") replaces the full instructions and the shorter repeats sent every five turns.
+- 🔴 Removed plan mode's interview phase (`CLAUDE_CODE_PLAN_MODE_INTERVIEW_PHASE` or a remote switch, off by default), with its pair-planning instructions and AskUserQuestion's "Skip interview and plan immediately" choice.
+- 🔴 Changed compaction to take the summary from the summarizer reply that contains `<summary>` when there's more than one, and to send images, PDFs and notebooks in attachments as placeholders such as `[image]` in the summary request.
+- 🔴 Stopped requiring saved OAuth `scopes` to be a list when deciding whether API requests can use the claude.ai login: a saved string containing `user:inference` now counts, while a number, true/false value or object makes creating the API client throw an error.
+- 🔴 Fixed interrupting a ripgrep search (Grep, Glob) being reported as "Ripgrep search timed out after 20 seconds"; searches stopped by their own time limit now count as timeouts even when the process reports no signal.
+- 🔴 Stopped auto-approving `lsof -i@host` and `ss` filters that name a host rather than a numeric address.
+- 🔴 Stopped the PowerShell tool from auto-approving read-only commands that aren't `Verb-Noun` cmdlets or their aliases, such as `ipconfig`, `netstat`, `findstr`, `tree` and `where.exe`, when an argument is anything but a single string, number or parameter (a comma-separated list, for example), as it already did for `git`, `gh`, `docker` and `dotnet` (the tool is opt-in on Linux with `CLAUDE_CODE_USE_POWERSHELL_TOOL`).
+- 🔴 Stopped auto-approving Bash commands in which the permission parser skipped text inside a redirection or a joined word, or whose redirect target is built from parts containing `$` or backticks; the parser also reads `$` before a backtick as its own token and a backslash at the end of a line as a line continuation, as the shell does.
+- 🔴 Stopped a remote holdback switch from turning off the away summary (session recap) and hiding its `/config` toggle.
+- 🔴 Reworded AskUserQuestion's result to Claude to "Your questions have been answered: …" with "notes:", instead of saying the user answered.
+- 🔴 Stopped the session survey from suggesting `/feedback` when `DISABLE_FEEDBACK_COMMAND` or `DISABLE_BUG_COMMAND` is set.
+- 🔴 Changed the native installer's error for a missing platform to "Native binaries for … are not available on this release channel", listing the platforms that version ships.
+- 🔴 Changed footer keyboard navigation: moving past the last background task goes on to the next footer item, and moving back into the task list selects the last task.
+- 🔴 Reworded the `/tui` switch hint to " · if you want to go back, use /tui default".
+- 🔴 Made the spinner's thinking wording ("still thinking", "almost done thinking") and shading count only thinking time, leaving out time tools ran, and added a spinner mode that shows "running tool for …" or "ran tool for …" in place of the thinking text (remote switch, off by default).
+- 🔴 Changed the team-artifacts tip shown while Claude works (remote switch, off by default) to appear only while there are artifacts you haven't seen, tracked in the global config, and to skip a tip with no content.
+- 🟢 Added `claude agents --json`, which prints live interactive and background sessions (process ID, folder, kind, start time, session ID, name, idle, waiting or busy) and exits; `--cwd` limits it to sessions under one folder, and the no-terminal error now points to it.
+- 🟢 Made the `claude agents` terminal title show how many sessions await input ("2 awaiting input · claude agents"), unless `CLAUDE_CODE_DISABLE_TERMINAL_TITLE` is set.
+- 🟢 Made the prompt's command and file suggestions highlight under the mouse and accept a click in fullscreen mode, as do the agent view's skill and agent suggestions.
+- 🟢 Kept the spinner and elapsed time updating after a terminal resize or refocus, rather than waiting for a keypress, by driving timers and animations from the shared clock.
+- 🟢 Made push-to-talk work in the agent view: holding Space on an empty reply or prompt starts dictation (Space keeps its old action after 500 ms without recording), with a "hold space to speak" hint, and voice input returns to idle when switched off mid-recording.
+- 🟢 Kept tasks created together in their creation order in the task list, by running `TaskCreate` calls one at a time.
+- 🟢 Stopped "Failed to install Anthropic marketplace" from lingering once the official marketplace is installed: a successful install clears the saved failure, and an installed marketplace is reported as such.
+- 🟢 Fixed the footer PR badge waiting for its next check after Claude runs `gh pr create`, `glab mr create`, `git push` or another tracked git operation; these now trigger a refresh.
+- 🟢 Stopped API calls failing for Agent Teams teammates whose names have non-ASCII characters, by percent-encoding the agent and parent-agent ID request headers.
+- 🟢 Made `/review` work on repositories with Classic Projects by fetching pull request details with `gh pr view --json` and a list of fields.
+- 🟢 Ended a loop where a `context: fork` skill kept re-invoking itself: the Skill tool now refuses that from inside the skill's own fork and tells Claude to follow the skill's instructions.
+- 🟢 Changed a whole-file Read over the token limit to return a first page (or the first characters, for very long lines) with a "PARTIAL view" notice on how to page on, instead of an error; SDK output marks it `truncatedByTokenCap`.
+- 🟢 Stopped auto-approving, as read-only or by sandbox auto-allow, Bash commands with a bare assignment such as `NAME=value;` to a variable that's set in the environment commands run with (or when that can't be checked) and isn't on a safe list (`NODE_ENV`, `LANG`, `RUST_LOG`, …).
+- 🟢 Added the repository (host, owner and name from the origin remote) and the current branch's open pull request (number, URL, review state) to the status line's JSON input; the status line reruns when the PR changes, and the status line setup agent describes the new fields.
+- 🟢 Listed what a plugin will install on the `/plugin` Discover and Browse screens, including skills and LSP servers, from the plugin catalog when it has the list and otherwise from the marketplace entry.
+
+<details>
+<summary>14 more for administrators and for authors of plugins, hooks, MCP servers and SDK hosts</summary>
+
+- 🔴 Changed `claude plugin validate` to warn about unknown fields in `plugin.json` and `marketplace.json` instead of failing: warnings suggest a likely spelling, point out cross-tool spellings such as `user_config`, and name manifests a field usually comes from; the new `--strict` turns warnings into failures (exit 1). Marketplace entries whose `relevance` or `experimental` value isn't an object now get a type warning: `relevance` used to fail validation, and `experimental` was ignored quietly.
+- 🔴 Made a cached plugin that lacks paths its marketplace entry declares for agents, skills or commands count as stale and get copied again, unless the source lacks them too or another running session uses that cache.
+- 🔴 Retried once after 250 ms, for WSL drive mounts, a plugin folder passed by path under `/mnt/` whose first check fails with an error other than "not found", and a skills folder under `/mnt/` that first reads as empty.
+- 🔴 Added `CLAUDECODE=1` and `CLAUDE_CODE_SESSION_ID` to the environment of hook commands and of status line, subagent status line and file-suggestion commands, and stripped `<claude-code-hint …/>` lines from hook output.
+- 🔴 Made hook input's `effort` field, and with it `$CLAUDE_EFFORT`, present whenever the model supports effort, using the model's default level when none was chosen.
+- 🔴 Made the MCP OAuth callback listener answer requests for other paths with a 404 page naming the `redirect_uri` the client must register.
+- 🔴 Included `resource_link` items ("[Resource link: name] uri") in the error text of failed MCP tool calls.
+- 🔴 Passed server instructions from SDK-hosted MCP servers to Claude, cut at 2,048 characters with a warning.
+- 🔴 Added sign-in token refresh for Claude Desktop hosts (`CLAUDE_CODE_ENTRYPOINT` of `claude-desktop`, `claude-desktop-3p` or `local-agent`): with the SDK's `getHostAuthToken` callback, a 401 makes Claude Code ask the host for a new token, put it in the variable `CLAUDE_CODE_HOST_AUTH_ENV_VAR` names (default `ANTHROPIC_AUTH_TOKEN`) and retry; `CLAUDE_CODE_HOST_AUTH_REFRESH_TIMEOUT_MS` sets the wait (30 seconds by default). The refresh applies only with a third-party provider or a custom API host and no Claude OAuth access token in use; ordinary first-party requests don't use it.
+- 🔴 Updated the bundled Claude API skill's Managed Agents material: a new self-hosted sandboxes guide (`config: {type: "self_hosted"}`, `ant beta:worker`, work-queue endpoints), the `limited` network policy with `allow_package_managers` and `allow_mcp_servers`, `sessions.update()` for per-session tool and MCP changes, cache pre-warming with `max_tokens: 0`, and MCP tools guidance that now places tool execution in Anthropic's orchestration layer instead of the session container, describes offloading tool outputs over 100K tokens to files, and says invalid vault credentials don't block creating a session (it reports a `session.error` event and retries sign-in when the session next goes from idle to running).
+- 🟢 Tagged `claude_code.tool` spans in OpenTelemetry traces with `agent_id` and `parent_agent_id`, and made background subagents' spans hang under the Agent tool span that launched them.
+- 🟢 Added `background_tasks` and `session_crons` to `Stop` and `SubagentStop` hook input, so a hook can tell a finished session from one waiting on background work or a scheduled wake-up.
+- 🟢 Made MCP prompt commands report missing required arguments by name, with a usage line, before calling the server, and split their arguments on any run of whitespace.
+- 🟢 Reported a `skills` entry that names a file rather than a folder, in `claude plugin validate` and when a plugin loads, with a hint to point at the folder holding `SKILL.md`.
+
+</details>
+
+<details>
+<summary>11 internal changes</summary>
+
+- 🔴 Made a forked skill put the caller's previous active skill back when it finishes, so later requests' skill attribution and OpenTelemetry labels, and `spawnedBySkill` on later Agent launches, name the right skill.
+- 🔴 Changed the project file-count metric (`project_file_count_rounded`) to use the count received so far when ripgrep closes without an exit code, instead of leaving the count out.
+- 🔴 Sent fewer expected failures to error reporting: failed process launches, OAuth refresh network and 401/403/429 failures, a broken OAuth refresh lock, `console.error` output while the interface runs, expected tool errors (blocked domains, ripgrep timeouts, files too large, stopped tasks and others), API timeouts, rate limits, missing models and invalid keys, reactive compaction failures, Remote Control "transport closed" failures, model replies whose JSON can't be parsed, and failed writes of the `.last-cleanup` marker that carry an error code.
+- 🔴 Added telemetry: extra fields on `tengu_feature_sad`, MCP `tools/list` failure codes and server details, plugin load failure component and error code, compaction reply counts and fallback details, the PR-status HTTP status, startup timings (`node_boot_ms`, `settings_load_ms`, `hooks_init_ms`, `load_initial_messages_ms`, `system_prompt_ms`, and `spawn_to_exec_ms` from `CCR_SPAWN_TIMESTAMP_MS`) and a cloud warm-spare flag.
+- 🔴 Measured API request, tracing and SDK result durations (`duration_ms`, `ttft_ms`) with the monotonic clock, rounded to whole milliseconds and never negative.
+- 🔴 Added debug log lines for queued commands dropped when the queue is cleared, skipped agent notifications, unrecognized keys in hook JSON output, tools missing at render time and error codes of missing plugin paths.
+- 🔴 Let precomputed background compaction start from the token counts of the latest API response (remote switch, off by default).
+- 🔴 Recorded which messages a compaction kept in cloud-session transcript uploads, and batched their "processing" delivery acknowledgements.
+- 🔴 Passed the active `/goal` and the ultraplan session link to subagents' tool context, where `/goal` and the ultraplan checks now read them.
+- 🔴 Gave the error for reading a directory the standard `EISDIR` code fields.
+- 🟡 (2.1.154) Rounded the spinner text's shimmer color blend to eighths, as other spinner shading already was.
+
+</details>
+
+<details>
+<summary>8 changes with no effect in this build</summary>
+
+- 🔴 Added `ConnectGitHub` to the tool lists for subagent exclusion, auto-mode approval and notification labels; no tool of that name exists in this build.
+- 🔴 Added a keybinding dispatcher that sends matched shortcuts as action events through focus scopes; nothing in this build declares a scope, so every key still goes to the existing handler.
+- 🔴 Added exceptions to the forced-sandbox rule for sessions with `IS_SANDBOX` set or already inside bubblewrap; the setting that forces the sandbox always reads as unset in this build.
+- 🔴 Added Android paths to the native installer and to the bundled SDK's binary lookup (`linux-<arch>-android`); this build never detects Android.
+- 🔴 Added a function that always returns false beside the commit and PR attribution code; nothing calls it.
+- 🔴 Added helpers for listing a process's child process IDs and for clearing the process-start cache in tests; nothing in this build calls either.
+- 🟡 (2.1.154) Added a shell mode to the agent view's prompt (a `!` prefix) behind a check that always returns false, and put the existing, already unreachable `--exec` handling behind the same check.
+- 🟢 Changed the cross-project resume hint to use `;` on Windows; this Linux build never detects Windows.
+
+</details>
 
 ---
 
