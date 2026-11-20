@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 79 releases from 2.1.**111** to 2.1.**325**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 80 releases from 2.1.**111** to 2.1.**327**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -59,6 +59,162 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 - The tools we develop to produce this changelog are closed source for the time being.
 
 # Changelog
+
+### 2.1.327 ◆◆◆◆
+
+- 🔴 Removed the built-in Claude Test plugin: `/claude-test` and `/claude-test --ci`, the `onboard`, `fix` and `all` actions, `.claude-test/specs/` completion, the `Write Claude Test draft` tool and its preview, and the local browser helpers. The first-run flow, browser preview and approval, special MCP password and no-selection prompts, dev-server cleanup and account-change disconnects are gone. Claude Test on claude.ai still uses its separate connector.
+- 🔴 Removed the Claude Test pane, including startup and test progress, estimated time, rerun comparisons, results and screenshots, and the report link and browser controls governed by `CLAUDE_TEST_NO_OPEN`.
+- 🔴 Removed Bash and Zsh's own Tab suggestions in `!` shell mode. Users lose shell-provided command, variable and path matches; Claude Code still offers its built-in path suggestions.
+- 🔴 Removed the 1,000,000-token auto-compaction ceiling from saved model windows, `CLAUDE_CODE_AUTO_COMPACT_WINDOW` and `--autocompact`; numeric windows can start at 100,000 tokens. Saved subagent `autoCompactWindow` values also lose the ceiling and still need a safe integer of at least 100,000.
+- 🔴 Extended Bash's `view_images` beyond the shared-server path to eligible clients, including the terminal, when the remote flag `tengu_fluttering_canyon` is on. It defaults off. Up to four images share 15 seconds, including any image the command returns itself. Each requested file still needs `Read` permission.
+- 🔴 Listed clickable filenames in Bash results when image files were sent to Claude. Image-only results keep the short image notice and list the files below it.
+- 🔴 Added plain source excerpts to eligible first-party WebSearch results, including in subagents, if WebFetch is available and no matching rule or hook would be skipped. A remote flag has to provide a positive excerpt budget; it defaults to zero. The usual search path also needs citations off.
+- 🔴 Replayed the current text or thinking block to Remote Control and cloud viewers that join or reconnect mid-response, when the remote flag `tengu_ccr_restate_open_block` is on. It defaults off.
+- 🔴 Raised the auto-compaction window when instructions and tools take up too much of the window saved for the model in user settings. The offer needs the `tengu_binary_music` experiment or the Desktop host to opt in. The raise targets twice the fixed input, up to the model's limit; `tengu_nested_kite` defaults on. `/context` shows both sizes.
+- 🔴 Changed the `/autocompact` slider to stop at the current model's context size rounded up to a 100,000-token step, or at a higher saved override, up to the slider's limit. `CLAUDE_CODE_AUTO_COMPACT_WINDOW` still takes precedence over the saved setting.
+- 🔴 Recovered the assistant reply around a pending tool call, including its sibling calls when saving and loading a resume point. On eligible headless resumes of an interrupted turn, resume repair skips unrelated blocks of unfinished replies; finished replies keep their blocks.
+- 🔴 Kept file attachments for prompts that survive a rewind even when the attachment rows themselves were on the removed side.
+- 🔴 Stopped background shell commands that belong to a removed turn on rewind even when the task record lacks a tool-call ID and the transcript can supply it.
+- 🔴 Changed `--resume` and `/resume` to share session loading, reloads and pagination; if a page fails to load, the picker can keep going instead of giving up on later sessions.
+- 🔴 Made `/resume` look up a supplied session ID even when the project has no listed conversations, and say when a supplied ID or title can't be found.
+- 🔴 Kept matching sessions visible while the resume picker reloads, and kept the selection marker visible while you're typing a search.
+- 🔴 Removed the session-specific suffix from Worktree's default name when Claude creates a worktree without a name.
+- 🔴 Stopped counting commits already reachable from a remote branch or a base ref that won't be removed as work at risk in the ordinary worktree removal prompt. Uncommitted and other at-risk work still counts.
+- 🔴 Stopped background launches before handing off when an added folder or its repository needs workspace trust. The error names the folder that needs approval.
+- 🔴 Changed `/export` to refuse a linked destination when replacing a file in place.
+- 🔴 Fixed `/teleport` to keep the session local if the cloud wouldn't preserve one of its `--disallowed-tools` rules.
+- 🔴 Let background agents create and update tasks where the task tools are available, instead of refusing solely because the agent is running in the background.
+- 🔴 Added terminal transcript notices for background agents that have waited 30 seconds or more for a permission answer. The remote flag `tengu_clever_pelican` defaults on.
+- 🔴 Moved eligible Bash and PowerShell commands to the background after they've run for at least 60 seconds and are holding up an agent report or message. Every unfinished call in the reply must qualify, and `tengu_tranquil_gadget` must be on; it defaults off.
+- 🔴 Kept finished background-task notices available until the session reports them, and then saved the updated list.
+- 🔴 Fixed resumed subagents losing the original turn's pending tool results when picking up a turn cut short, including an interrupted result for a call that can't be replayed.
+- 🔴 Changed resumed teammates to refresh permission and tool choices from the current session and drop the previous effort-based model choice when resuming as delegated work.
+- 🔴 Reworked the Background detail screens for agents, shells and monitors, cloud sessions, Auto Mode setup scans, and memory consolidation. Titles identify the task, and status, progress, output and actions sit in consistent places.
+- 🔴 Made MCP reconnect progress consistent across dialogs and `/mcp`. Status shows `still retrying` or `failed · retrying`, batch size and failures where relevant, with an immediate reconnect link. Closing the dialog doesn't stop retries; invalid settings still show `config issue`.
+- 🔴 Let MCP reads use ordinary resource URIs even when a skill from that server is loaded. Directory aliases still can't be used.
+- 🔴 Told the model to search the likely MCP server's tools before answering from memory or saying a capability doesn't exist when the deferred tool list groups that server's tools.
+- 🔴 Added file uploads through Desktop for supported connectors that advertise upload support, when Claude Code can't use its own sign-in for the transfer. Claude Code still checks which files can go. Each upload can take up to 18 minutes and can be canceled.
+- 🔴 Added downloads through Desktop for connectors that advertise download support when the session can use Desktop's sign-in. Files can arrive inline or in chunks; each request can wait up to six minutes. The connector-files flag `tengu_piped_planet` defaults off.
+- 🔴 Made outside-workspace connector uploads default to No. The prompt explains that it won't send the file without permission and can't save an always-allow rule.
+- 🔴 Added transcript notices that name files sent to a connector and identify the connector that received them.
+- 🔴 Added local file references up to 4 MB for Microsoft 365 uploads and updates to SharePoint and OneDrive. The connector must support filling them, the organization must allow `allow_m365_file_references`, and the remote flag `tengu_curried_forest` defaults off. Ordinary text still passes as text.
+- 🔴 Kept MCP images visible when saving the original fails, using a smaller copy when the host can shrink it and adding a note about the resized image.
+- 🔴 Hid overridden `/config` controls for auto-continue, dynamic workflows, idle compaction and Clawd file progress. The controls also stay hidden where the preferences can't be saved.
+- 🔴 Showed a warning naming each newly broken settings file that didn't load, with a pointer to `claude doctor`.
+- 🔴 Described custom commands that didn't load because a built-in command already uses the same name, and told users to rename them and restart.
+- 🔴 Reorganized the `/context` columns for custom agents, memory files, skills, and MCP tools into matching sections with compact counts and token totals, and grouped rows in the expanded view.
+- 🔴 Clarified when `/effort` will save a default and when it'll only change the current session, including separate key hints when both choices are available.
+- 🔴 Showed the current log path when `/debug` is typed.
+- 🔴 Clarified `/restart` refusals and errors: wait for background work or stop it in `/tasks`, retry a failed save later, and distinguish a restart that failed after saving.
+- 🔴 Clarified Ultrareview startup and timeout errors. Recognized launch failures are distinct from runs that started and then timed out, without a repeated status prefix or extra copy of the error.
+- 🔴 Changed Ultrareview's interruption and failure notices to say an unfinished review may be billed, showing its cloud session ID when known.
+- 🔴 Changed `/advisor` calls from plugins to apply only to the current session instead of saving the preference.
+- 🔴 Stopped loading `CLAUDE.md` or skills from connector download folders and session scratchpads, including links into them, so files saved there can't supply instructions.
+- 🔴 Skipped `CLAUDE.md` files and rules directories in disallowed locations, including when the resolved location is disallowed, and kept their included files out of the loaded instructions.
+- 🔴 Removed public access from Claude Code project, plan, and debug folders you own on Unix, while preserving group access for folders set up to share. The check skips root and uses `tengu_enchanted_island`, which defaults on.
+- 🔴 Protected Claude Code settings and data paths when pruning old sessions and caches, including when cleanup reaches those paths through a link. The remote switch `bot_protected_tengu_purring_magpie` defaults on.
+- 🔴 Stopped fast or pasted keystrokes from opting users into data sharing in the startup privacy notice. New input can turn the initial key check back on while the notice is open.
+- 🔴 Fixed `/privacy-settings` and Data privacy to confirm a choice before reporting it saved. Read back uncertain writes, restore the toggle or show an error when account identity can't be confirmed, and check again on close. A read over 60 seconds old can't confirm a save. If retry won't help, the dialog offers `Close` instead of `Try again`.
+- 🔴 Required Claude to resend some calls from replies begun before switching to auto mode. This applies when auto mode sets aside a broad allow rule and `tengu_plain_hedgerow` is on. It defaults off.
+- 🔴 Made file deny rules and read approval rules apply even when a file has more than one path name. An explicit rule to ask before writing now still applies when plan mode or another safety check also requires approval.
+- 🔴 Kept shell and slash commands marked to run on their own out of the current prompt batch. They can wait for their own turn without holding up an otherwise ready prompt.
+- 🔴 Let text that looks like a slash command join a running turn in eligible remote chats, when the model supports messages during a turn and the text doesn't match an installed command. Recognized commands still wait.
+- 🔴 Recognized standard output and error device redirections in Bash permission checks when the sandbox permits the writes. Explicit deny rules still apply.
+- 🔴 Made `Edit` include the next newline when deleting a match that doesn't already end in one and is immediately followed by one. The approval diff uses the same match when it can read the file.
+- 🔴 Held back the always-allow choice for a replace-all edit until its inline terminal diff is drawn. If that preview can't show all the changes, you can approve just this edit or reject it. This doesn't change the separate IDE diff.
+- 🔴 Pointed users to `/rewind` for oversized API requests, instead of suggesting they make room or try the same request again when the problem is the request size rather than the model’s context limit.
+- 🔴 Fixed wrapping and spacing for wide characters, emoji sequences, flags and combining marks. The new renderer uses measured widths and can substitute a character that fits instead of wrapping early. The classic renderer also works around some of these problems in GNU screen.
+- 🔴 Checked the terminal's actual cursor position after quiet periods and repaired misaligned frames in the new renderer. Repeated mismatches can switch to the old renderer. Slow terminals and sessions that don't own the terminal aren't probed.
+- 🔴 Stopped waiting for terminal capability probes after 2 seconds so the app can proceed even when a reply never comes.
+- 🔴 Made fullscreen transcript search fit more comfortably in narrow terminals. The status now shows the match count or indexing progress alongside the keys: Escape appears from 50 columns, and Enter from 70 when there are matches.
+- 🔴 Made transcript search match thinking text as well as assistant text and tool inputs.
+- 🔴 Warned in the paid-model continuation prompt that Claude can spend credits without asking again, including for organization members who can already continue on credits.
+- 🔴 Added a second confirmation before removing the monthly usage-credit limit, with `No, keep a limit` selected first.
+- 🔴 Clarified the `ANTHROPIC_API_KEY` warning: turn on **Use custom API key** in `/config` to use the key.
+- 🔴 Fixed artifact stars in `/artifacts` so an older listing can't immediately undo a star or unstar the user just changed.
+- 🔴 Fixed `/artifacts` so later pages don't undo pin or unpin changes you've already made while the list was loading.
+- 🟡 (2.1.326) Made the monthly spend-limit menu ignore input that arrives as it opens or while the limit is loading, so early keypresses don't carry straight into a choice.
+- 🟢 Sped up the first eligible Bash call by starting the shell while the call is still streaming. Shell startup files can run before approval, even if you refuse the command. The remote switch `tengu_amber_kettle` defaults on; set `CLAUDE_CODE_DISABLE_SHELL_HEAD_START=1` to turn the head start off.
+- 🟢 Stopped `/export` from overwriting without asking. The interactive picker defaults to changing the name; `/export <name>` leaves an existing file alone and points to the picker.
+- 🟢 Changed `ExitWorktree` to ask before discarding work it may delete, without offering an always-allow choice. An existing allow rule, auto mode or bypass permissions mode can still let it proceed without asking.
+- 🟢 Added local setup diagnostics to `/status` for broken agent, output style, skill and command files; keybinding and sandbox problems; ignored settings; and tool hook matchers written in a form that won't match. It shows up to 10 entries of 300 characters each and counts the rest. The extra checks don't run for a thin client attached to a remote session.
+- 🟢 Retried a transcript read once using the whole file when it ends early. If the retry fails or finds no conversation rows of its own, Claude Code keeps the first read. It logs a warning if messages might still be missing.
+- 🟢 Added `/tui classic` to switch back from `fullscreen` and used it in startup, onboarding and recovery instructions. `/tui default` and the `default` argument still work.
+- 🟢 Preserved pasted images when a prompt begins with a file path and is handled as ordinary text, not a slash command.
+- 🟢 Sorted `Grep` content, count and filename results by path before applying limits and offsets. Content groups with the same path use displayed text to break ties; the lines within a group keep their order.
+- 🟢 Let local `Edit` calls use a matching full read from before compaction for an unchanged file, including outside the project, even when the cached contents aren't available. The remote flag `tengu_quiet_kite` defaults on.
+- 🟢 Kept a completed tool call and its result out of the summary on the first eligible compaction attempt after a reply hit the output limit. The added case needs `tengu_flickering_nest`, which defaults off; if the attempt fails, Claude Code can retry without keeping the pair separate.
+- 🟢 Allowed a cut-off reply on a model with an assumed 32,000-token limit to continue with up to 128,000 output tokens when the user hasn't set an output limit.
+- 🟢 Warned when an interactive resume or fork starts from a transcript branch whose earlier messages couldn't be loaded. A missing parent on the first saved row alone doesn't trigger the warning.
+- 🟢 Restored a newer transcript branch after an unanswered tool call or a reply with no visible text, even if system rows follow that silent reply. Both need resume repair and a remote switch that defaults off: `tengu_sorted_metcalfe` for unanswered calls or `tengu_spicy_oboe` for silent replies.
+- 🟢 Kept an explicitly empty conversation empty when resuming after a rewind instead of reviving an older transcript branch. This needs resume repair and `tengu_witty_octopus`, which defaults off.
+- 🟢 Fixed a rewound prompt coming back after another restart. Claude remembers which transcript rows predate the rewind and saves the new resume point when new rows arrive, even if the next prompt's rows arrive out of order.
+- 🟢 Reported how many files `/rewind` couldn't restore and showed up to three failing paths, including missing backups and failed writes. The result still distinguishes files skipped on purpose.
+- 🟢 Kept eligible incoming prompts and notifications queued through Stop in remote headless sessions, including during a restart. The added protection needs `tengu_whimsical_crayon`, which defaults off.
+- 🟢 Fixed tasks created after `/clear` going missing or cleared tasks coming back when a cloud or self-hosted runner session resumes without its feature flags. The worker uses the session's own task list when restoring tasks.
+- 🟢 Stopped cloud and self-hosted sessions from running a command after Stop when its approval arrives after a restart and feature flags haven't loaded yet.
+- 🟢 Resolved relative `--add-dir` paths against the launch folder when `--worktree` moves the session, including for background launches. An eligible sibling folder stays available at its original location; some parent paths such as `..` narrow to the worktree. This is on by default.
+- 🟢 Fixed `claude agents` and `claude rm` falsely reporting unpushed commits when a background worktree has a top-level file or directory named `HEAD`.
+- 🟢 Kept `/teleport` open when Enter is pressed after the cloud session list fails to load. Ctrl+R still retries.
+- 🟢 Kept agents passed with `--agents` in the available list when plugins are first loaded or refreshed.
+- 🟢 Restored the saved main agent on resume when its definition becomes available after plugin checks, so the `--resume` picker doesn’t drop that agent.
+- 🟢 Kept eligible subagents started without a model on the model they first used when they're resumed, even after `/model` changes the main session's choice. The regular local path uses `tengu_graceful_pudding`, which defaults on.
+- 🟢 Stopped a resumed subagent from inheriting the model and effort choice of a sibling that messaged it. Claude uses the main session's model context to pick the resumed agent's settings.
+- 🟢 Changed in-process teammates to resolve their model before estimating or compacting the next turn, so those steps use the selected model's limits and token estimate.
+- 🟢 Told the main conversation when an active agent has waited 30 seconds or more for a permission answer, so Claude can tell you which prompt needs an answer. The remote flag `tengu_clever_pelican` defaults on.
+- 🟢 Asked a subagent that hits its output limit twice to fit the full answer in half the previous length, or say up front that it's partial.
+- 🟢 Waited for plugins before dispatching background wake-ups or checking MCP readiness on restarted, adopted or orphaned subagents, so plugin-provided tools are available. Work arriving during the load is checked afterward.
+- 🟢 Paged `ListAgents` results over 10,000 characters in recent-activity order. Results say how many entries are hidden, distinguish incomplete listings from the end, and explain that omitted agents may still be reached by name or a unique prefix of at least three characters. An expired or foreign `cursor` returns `cursor_not_valid` and asks Claude to start over.
+- 🟢 Kept unrelated top-level keys in `.mcp.json` when adding or removing a project MCP server.
+- 🟢 Refused to add a project MCP server when `.mcp.json` lists servers at the top level instead of under `mcpServers`. The error points to the file layout that keeps those servers visible to plugins.
+- 🟢 Gave local, remote and agent-only servers a shared `/mcp` detail layout for connection issues, sign-in and capabilities. Action menus include Back and use arrow keys outside screen-reader mode.
+- 🟢 Changed the empty `/mcp` message to suggest restarting after adding a server and explain how to reset a declined project server choice.
+- 🟢 Showed which project, local, flag, or managed setting overrides a preference in `/config`, including theme, notifications, and auto-compact, so users can see why a change there won't take effect.
+- 🟢 Kept a mouse click in a `/plugin` results list from opening the highlighted item and leaving the next Enter press to install or disable it. A click now highlights; Enter opens the item.
+- 🟢 Warned before removing a marketplace that this will also delete settings and saved data for the plugins listed in the confirmation.
+- 🟢 Listed same-named skills only once in the slash-command menu, instead of showing a row for each location that provides the skill.
+- 🟢 Grouped hooks supplied with `--settings` under `Startup settings` in `/hooks`.
+- 🟢 Made the `/statusline` setup agent use the `settings.json` under `CLAUDE_CONFIG_DIR` when set, including if that file is a symlink.
+- 🟢 Changed `/autofix-pr` cancellation to dismiss the dialog right away and finish stopping the cloud session in the background. If it can't stop the session, you'll get a follow-up with a link to stop it yourself.
+- 🟢 Kept parenthesized content in ambiguous `--disallowedTools` lists instead of quietly dropping the deny rule.
+- 🟢 Let Escape dismiss a permission prompt as soon as it appears. The brief delay on other answers still keeps a key intended for the previous screen from confirming a tool call.
+- 🟢 Stopped arrow keys from wrapping past the decline choice in numbered permission, question and plan menus, including prompts that show No first. An out-of-range number selects No.
+- 🟢 Sent more broad package-runner allow rules through auto mode review, including `pnpm dlx`, other `exec` and `dlx` forms, and rules written with a path or version.
+- 🟢 Kept Bash, PowerShell and Monitor calls in the sandbox when their permission check depended on it, even if they'd normally run outside it. Bash and PowerShell explain why in the result.
+- 🟢 Refused more Bash commands that name a path covered by a Read or Edit deny rule when `permissions.blockReadsOutsideWorkingDirectories` is on. Claude Code checks more path spellings before offering approval.
+- 🟢 Fixed an earlier Code Mode script losing its auto mode approval when a later script also passes auto mode. Inner tool calls can still use the check that allowed their own script.
+- 🟢 Fixed auto mode disregarding some wildcard PowerShell allow rules for scripts with paths starting with `.\`. On Linux this applies if you've enabled the PowerShell tool with `CLAUDE_CODE_USE_POWERSHELL_TOOL=1`.
+- 🟢 Cleared unfinished `!` commands when the usage-limit menu opens automatically, so another Enter after closing the menu doesn't run one by accident.
+- 🟢 Stopped Tab from filling in Bash filenames where a new command belongs, such as after a pipe or opening parenthesis. It still completes filenames in arguments.
+- 🟢 Fixed slow rejected `Write` calls on large files by showing a preview of the proposed text instead of reading the existing file to build a diff. The compact view just names the rejected write.
+- 🟢 Named changed files in the Bash result even when their diff can't be shown, including binary files and files too large for the preview. Compact output lists up to three extra names before the rest count.
+- 🟢 Reported the size on disk when `Read` rejects a streamed file of 10 MB or more, rather than showing the 512 KB it read before stopping.
+- 🟢 Let notebook reads return supported output even when a cell also has an unknown output type, with a note about what couldn't be shown.
+- 🟢 Kept a notebook's final newline when running NotebookEdit.
+- 🟢 Limited file lookups to the first 100 `@` mentions per prompt so a long list doesn't stall the turn. Claude Code logs when a prompt names more.
+- 🟢 Rejected WebFetch URLs longer than 2,000 characters during argument validation and returned a length-specific message.
+- 🟢 Made terminal transcript search find the contents of applied `Edit` and `Write` results, including newly created files and overwrite diffs, while excluding staged changes.
+- 🟢 Restored the prior query and returned to the original message and row when cancelling a fullscreen transcript search. If the transcript was following the bottom, it follows it again.
+- 🟢 Fixed next and previous in fullscreen transcript search when a match can't be shown. The search moves past it, trying up to 20 matching messages per move.
+- 🟢 Recovered from damaged terminal layout data by rebuilding measurements and repainting. The checks are on by default; set `CLAUDE_CODE_DISABLE_LAYOUT_CHECK=1` to turn them off. Claude Code stops checking if the damage keeps happening.
+- 🟢 Retried a failed terminal redraw right away if it hadn't already forced a full repaint, so the screen can recover from a brief memory allocation failure.
+- 🟢 Fixed some garbled rows in tmux with passthrough enabled, including inside kitty, Ghostty and iTerm2. The new renderer corrects the cursor when tmux might've skipped drawing unchanged cells.
+- 🟢 Kept the input cursor's target column when moving up or down across a shorter or empty line.
+- 🟢 Reworked the model picker on terminals under 60 columns: rows stay short, and the focused model’s longer description moves below the list.
+- 🟢 Made the `/effort` picker fit narrow terminals by showing the current choice between arrows in place of the full slider.
+- 🟢 Added a warning when an API key overrides an Anthropic profile at startup, with advice that depends on whether `/login` saved the key.
+- 🟢 Kept dynamic workflows paused at their usage limit if the original login changes or can't be verified, even after the limit resets. A fresh prompt or the old login can resume; the pause notice points to `/workflows` instead of showing a reset time.
+- 🟢 Discarded a pre-warmed background session if the account or organization has changed, or if Claude Code can't verify the current login when it's about to use the session.
+- 🟢 Fixed Artifact publishes being refused after a file's timestamp changed without changing the approved bytes. Claude now checks the file hash saved while approval was pending.
+- 🟢 Fixed `/artifacts` to keep looking for an item eligible for the All list if its first pages look empty, with a fallback when paging can't supply a usable result.
+- 🟢 Retried temporary `/artifacts` page failures twice, honoring the server's requested delay when available, then displayed `Couldn't load the whole list` if paging couldn't finish.
+- 🟢 Fixed new artifacts being refused after a person approved them in an eligible cloud scheduled task, when the organization requires approval for each one.
+- 🟢 Fixed new artifact creation and first publish being refused after a person approved the call through an eligible local Agent SDK app, when the organization requires approval for each new artifact. The app must run the session in the foreground over standard input and output and ask for one-time approval on that call.
+- 🟢 Accepted the short `/_blob/…` path an artifact page shows, as well as the ID, when reading a single upload. Published-file and batch reads that encounter an upload now explain how to read it separately by ID.
+
+[All 1,821 changes in 2.1.327](releases/2.1.327.md)
+
+---
 
 ### 2.1.325 ◆◆◆◆
 
