@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 80 releases from 2.1.**111** to 2.1.**327**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 81 releases from 2.1.**111** to 2.1.**327**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -1757,6 +1757,23 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 ### 2.1.148 ◆◆◆◆
 
 - 🟢 Fixed Bash tool commands failing with exit code 127 for some users since 2.1.147: the shell snapshot again leaves out shell functions whose names start with a single underscore (two underscores are still kept), which also undoes 2.1.147's fix for aliases that call such functions.
+
+---
+
+### 2.1.147 ◆◆◆◆
+
+- 🔴 Made `/logout` and `claude auth logout` revoke the saved claude.ai refresh token with Anthropic before signing out (5-second limit; if that fails, sign-out continues locally). Sessions on other providers and background sessions skip it.
+- 🔴 Made Claude Code wait up to 5 seconds at startup for the organization's policy limits to load when none are cached yet, instead of loading them in the background; this covers API-key users and Team or Enterprise claude.ai sign-ins on Anthropic's API, but not `claude auth` commands.
+- 🔴 Removed the Max-plan restriction on auto mode for Opus 4.6 and Sonnet 4.6 in Anthropic API sessions.
+- 🔴 Changed `/resume` and `claude --resume` with no sessions in the current project to open the picker with "No conversations found in this project." and Ctrl+A to show all projects, instead of stopping at "No conversations found to resume."
+- 🔴 Kept the 1M-context version of the model when resuming a session: if the current model setting is the `[1m]` variant of the model the session used, the restored model keeps `[1m]` instead of falling back to the standard window.
+- 🔴 Added `/plugin configure <plugin>` (or `config`) to set a plugin's options; cancelling the form now says "Configuration cancelled." and saving nothing says "No configuration changes."
+- 🔴 Changed the plugin options form to ask for every option that has no value, optional ones included (before, only missing required or invalid ones), and to open when you install a plugin that's already installed but has unset options; an optional field left empty that had no saved value is no longer saved, and "Run /reload-plugins to apply." appears only when something changed.
+- 🔴 Made a session that restarts itself into a new process (after `/update`, a background-session respawn or moving it to the background) turn Remote Control back on at startup when the old process had a full Remote Control connection; before, the new process turned Remote Control on only when a flag or the `remoteControlAtStartup` setting asked for it.
+- 🔴 Made the `claude agents` view respect the `tap` voice mode: holding Space on an empty prompt or reply no longer starts push-to-talk there, and the "hold space to speak" hint is hidden.
+- 🔴 Changed auto mode's classifier rules: the hard block on getting around safety checks, renamed "Auto-Mode Bypass", now also covers jailbreaking the classifier and retrying a denied action another way, and drops the clause that blocked whenever the stated reason was a classifier outage or false positive; adding or widening allow rules the user didn't ask for now counts as self-modification.
+
+[All 80 changes in 2.1.147](releases/2.1.147.md)
 
 ---
 
