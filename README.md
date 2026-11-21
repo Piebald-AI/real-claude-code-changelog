@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 81 releases from 2.1.**111** to 2.1.**327**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 82 releases from 2.1.**111** to 2.1.**327**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -213,6 +213,30 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 - 🟢 Accepted the short `/_blob/…` path an artifact page shows, as well as the ID, when reading a single upload. Published-file and batch reads that encounter an upload now explain how to read it separately by ID.
 
 [All 1,821 changes in 2.1.327](releases/2.1.327.md)
+
+---
+
+### 2.1.326 ◆◆◆◆
+
+- New terminal renderer
+  - 🔴 Added a terminal renderer for inline and fullscreen output, enabled by `CLAUDE_CODE_NEW_RENDERER` or the `tengu_idempotent_willow` flag (off by default) in a terminal with screen reader mode off. It measures how wide the terminal draws characters such as emoji and accented letters where it can, or uses widths for known terminals when it can't measure.
+- @-mentioned files
+  - 🔴 Added a retry in the main conversation when a request is too long after an @-mentioned file was attached in full despite its size. Claude Code withdraws that turn's over-limit whole-file attachments and sends the request again, as it already did for PDFs.
+- MCP connections and reconnects
+  - 🔴 Expanded automatic MCP reconnection to eligible WebSocket and Claude.ai connector servers without starting a new sign-in, and removed the old `tengu_abundant_shore` gate (off by default). Tool search waits for a reconnect only when `tengu_ticklish_fern` is on (off by default).
+- Bash permission checks
+  - 🔴 Denied a Bash command flagged as a dangerous removal when one of your deny rules also covers it, instead of only asking for approval.
+  - 🟢 Changed Bash commands too long for the permission check to read in full: a patterned `Bash`, `Read` or `Edit` deny rule now makes the check refuse the command with an explanation. Without one of those rules, a command that hasn't already been refused needs approval.
+  - 🟢 Stopped treating a Bash command as read-only when it uses a value assigned earlier in the same command or runs a loop whose passes differ, so it goes through the normal permission checks, when the `bot_protected_tengu_stateful_milner` flag is on, as it is by default.
+  - 🟢 Stopped a write deny rule on a `cp` command's source file from blocking the copy when the command uses only plain paths and the options `-p`, `-f`, `-i`, `-n` or `-v`; such sources are now checked as reads.
+- Git commands Claude Code runs for itself
+  - 🔴 Switched off the filter drivers named in a repository's own git config, as worktree creation already did, for the `git status` and other git commands Claude Code runs for its own checks, so a repository's config can't make those checks run its filter programs; Claude Code skips the command when the folder isn't a usable repository, sits outside its work tree, or has a filter it can't switch off. On by default through the `tengu_sifted_pebble` flag.
+- Safe mode
+  - 🔴 Ran hooks from plugins that managed settings enable in safe mode (`--safe-mode`) and in `--bare` mode; before, plugin hooks were off in both modes, and `--bare` ran only hooks the server supplied.
+- Artifacts
+  - 🔴 Changed local Artifact live watching to default on when the service sends no setting. `tengu_slate_lantern` and `tengu_slate_lantern_ember` now default on, and the new `CLAUDE_CODE_ARTIFACT_LIVE_WATCH` variable overrides the first. It applies to sessions where Artifacts are available.
+
+[All 2,331 changes in 2.1.326](releases/2.1.326.md)
 
 ---
 
