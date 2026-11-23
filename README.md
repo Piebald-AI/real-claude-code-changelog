@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 88 releases from 2.1.**111** to 2.1.**327**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 89 releases from 2.1.**111** to 2.1.**327**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -1244,6 +1244,23 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 ### 2.1.204 ◆◆◆◆
 
 - 🟢 Made headless sessions using `--output-format stream-json` with `--verbose` write events produced during startup, such as those from SessionStart hooks, as they happen instead of holding them until the session begins, so a remote worker no longer looks idle and gets shut down partway through a hook.
+
+---
+
+### 2.1.202 ◆◆◆◆
+
+- 🔴 Brought back the silent same-model retry after a refusal, missing from 2.1.181 through 2.1.201: when the account's `convolute_arcades` client data is on and the session runs the default Opus model, a refused response is retried on that same model without the model-switch notice, and an interactive main session continues from at least 80 characters of partial text for the first such retry in the session, unless the response stopped inside a tool call. With the switch on, requests to Anthropic's API and to Claude Platform on AWS after a refusal fallback carry the `x-is-refusal-fallback` header.
+- 🔴 Added `stop: true` to the ScheduleWakeup tool so Claude can end a self-paced `/loop` at once, cancelling its pending wakeups; the loop instructions now ask Claude every turn whether another iteration is worth running instead of always rescheduling. Self-paced `/loop` is behind `tengu_kairos_loop_dynamic`, which defaults off.
+- 🔴 Added Mermaid diagrams to Markdown artifacts: fenced code blocks marked `mermaid` render as diagrams in light or dark colors on the published page, and the code stays visible when a diagram fails to render. It's behind `tengu_artifact_mermaid_diagrams`, which defaults on.
+- 🔴 Added a hidden live watch on artifacts published from interactive and SDK sessions: when another session republishes the page, Claude is told its copy is stale and to fetch the latest. It's behind `tengu_slate_lantern` (off by default), isn't armed in cloud sessions, stays out of task lists, doesn't keep SDK turns busy, and stops if it can't connect within 30 seconds.
+- 🔴 Removed the connector-grant notes from the Artifact permission prompt and tool row: redeploying a page that carries a stored connector grant, or one whose grant couldn't be read, no longer says so, though it still asks for approval.
+- 🔴 Collapsed Write and Edit calls to the scratchpad folder into summary rows that count the edits and show lines added and removed.
+- 🔴 Changed `/code-review low` on Sonnet 5 to aim for one finding per changed file, up to four, with a second pass when it finds fewer; `high`, `xhigh` and `max` reviews on Sonnet 5 now start with two to eight finder agents picked from the diff's size.
+- 🔴 Changed `/permissions` so a rule that comes from `--settings` or a slash command says it's read-only and can't be changed there, and a failed deletion says the rule is unchanged.
+- 🔴 Changed the built-in Claude Code help skill to give you documentation links without the trailing `.md`, so they open the rendered page; it still fetches the `.md` files itself.
+- 🔴 Let Bedrock, Mantle and Claude Platform on AWS sessions whose credentials come from the desktop app use AWS access keys, or an AWS config or credentials file (with `AWS_PROFILE` if set), passed in the environment, where they used to fail unless a bearer token or API key was set or authentication was skipped; Vertex sessions under the desktop app now use the Google credentials in the environment instead of failing, without running the local refresh step. When nothing usable is passed, the error explains that background agents and teammates can't use that credential kind.
+
+[All 97 changes in 2.1.202](releases/2.1.202.md)
 
 ---
 
