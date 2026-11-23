@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 102 releases from 2.1.**111** to 2.1.**327**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 104 releases from 2.1.**111** to 2.1.**327**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -1480,6 +1480,23 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 ---
 
+### 2.1.182 ◆◆◆◆
+
+- 🔴 Added `/migrate` and `claude migrate [codex|gemini] [--dry-run] [--yes]`, which imported OpenAI Codex and Gemini CLI setups (MCP servers, permission mode, subagents, skills, slash commands and `AGENTS.md` or `GEMINI.md` instructions) through a checkbox picker, or without one when given `--yes`; `/init` offered it when it found such config. `--yes` imports only user-level items with no warning, leaving project config, permission-mode changes and other warned-about items for individual selection in the terminal picker; migration was removed again in 2.1.183.
+- 🔴 Added a 60-second limit on waiting for response headers to a streaming API request: a request that gets none is aborted with "Request timed out: no response headers after 60s" and retried. `CLAUDE_CODE_CONNECT_TIMEOUT_MS` sets the limit, and 0 turns it off.
+- 🔴 Made `claude -p` give up after 10 minutes of waiting for background subagents or workflows at the end of a run, stopping them and any background shell commands with a note on stderr; `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS` sets the limit, and 0 waits indefinitely.
+- 🔴 Changed `/diff` to show a branch's changes since it left the default branch, titled "Branch changes (vs <branch>)", when there are no uncommitted changes.
+- 🔴 Fixed slash-command suggestions jumping back to the first row when the list refreshes without a change to the input; the highlighted command now stays selected if it's still present.
+- 🔴 Added Fable usage-credit help for claude.ai plans where Fable now needs usage credits: a "Fable now runs on usage credits." startup notice, a "Switch to <model>" choice in the rate-limit menu, a hint to switch models under Fable limit messages, and a disabled Fable row in `/model` for Team members without billing rights whose organization hasn't turned usage credits on.
+- 🔴 Pointed Team and Enterprise usage-limit messages at `/usage-credits`, and offered members "Ask your admin for more usage" in the rate-limit menu even when their organization's credits are used up or turned off.
+- 🔴 Made auto mode retry its safety classifier up to four more times within the same time limit when the reply can't be read, before blocking the action as unevaluable.
+- 🔴 Raised the auto mode classifier's sampling temperature from 0 to 1 when it runs on a model that accepts one, such as Sonnet 4.6 or Opus 4.6; by default the classifier uses the session's model.
+- 🔴 Made more Bash commands ask for approval: builtins such as `exit`, `return`, `shift`, `set` and `print` whose operands are only known at run time (a command substitution's output or a variable whose value isn't known in advance), as `declare`, `export` and `local` already did; `printf` operands known only at run time even without a `[`; the same checks for `bye` and `logout`; and redirect targets built from several parts. A backslash before a line break inside a word now counts as a line continuation.
+
+[All 101 changes in 2.1.182](releases/2.1.182.md)
+
+---
+
 ### 2.1.179 ◆◆◆◆
 
 - 🔴 Moved in-process agent-team teammates into the background tasks panel, where each row shows "idle", "awaiting approval" or "stopping", the current turn's time, tokens and queued messages. Removed the old teammate views: the tree under the spinner with message previews, the footer's teammate pills and Teams dialog (end, shut down, prune idle, hide or show panes), Shift+↑/↓ selection and Ctrl+Shift+O previews; stopping all background agents now also stops running teammates.
@@ -2518,6 +2535,23 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 - 🔴 Made the cloud environment lookup used when starting a cloud session refresh the claude.ai sign-in and retry once after a 401, instead of failing.
 
 [All 82 changes in 2.1.122](releases/2.1.122.md)
+
+---
+
+### 2.1.120 ◆◆◆◆
+
+- 🔴 Showed the end-of-turn duration line ("✻ Worked for 4s") after every response that called the model, not only after turns longer than 30 seconds; in focus view the line also says how many messages it hid ("3 messages hidden (/focus to show)").
+- 🔴 Added `CLAUDE_CODE_LEAN_PROMPT` (or remote switches, off by default): with Claude Opus 4.7 it swaps most of the system prompt for a short "# Harness" section and sends much shorter descriptions of Bash, Read, Write, Edit, Grep, Glob, WebFetch, WebSearch, TodoWrite and Agent; with any model it trims the memory instructions to a short list of memory types and moves the full guide into a `memory-types` skill Claude loads before saving a memory.
+- 🔴 Added a Keep/Undo check-in for memory files the main agent writes or edits directly inside its auto-memory folder, excluding `MEMORY.md` (remote switch, off by default; requires auto memory, telemetry and `allow_product_feedback`). By default, the panel hides after 8 seconds, leaves 30 seconds between panels and asks for a one-sentence summary above 5 lines; Undo restores an edit or deletes a new file and its index line unless the file changed meanwhile.
+- 🔴 Told auto mode's classifier about your permission deny rules (all but `prompt:` rules) and asked it to block actions that get the same effect through another tool, such as editing a denied file with `sed -i` or a heredoc in Bash.
+- 🔴 Made `claude remote-control` run as a server for several sessions for everyone, where a remote switch used to decide: it pre-creates a session in the current folder, starts in same-folder mode instead of single-session mode, accepts `--spawn same-dir|worktree|session`, `--capacity` and `--[no-]create-session-in-dir`, and `w` switches between same-folder and worktree mode.
+- 🔴 Made Remote Control send presence updates for the session without a remote switch, and skip them while the terminal window isn't focused.
+- 🔴 Made interactive sessions register the `claude-cli://` link handler by themselves, which a remote switch used to gate; `disableDeepLinkRegistration: "disable"` still stops it.
+- 🔴 Changed Claude in Chrome's tools: added `browser_batch` (several browser actions in one call, stopping at the first error), `tabs_close_mcp` and `file_upload` (sends local files to a page's file input), removed `update_plan`, and capped the `computer` tool's `wait` at 10 seconds instead of 30.
+- 🔴 Changed Claude in Chrome's bridge connection to use a 60-second response timer for tool calls (120 before, 2 for listing tabs), paused during permission prompts, and fail calls at once when the extension disconnects or the connection drops. Disconnect errors ask Claude to retry in a few seconds; timeouts suggest a lighter operation, pings run every 30 seconds with a 90-second silence limit, a connect stuck for 30 seconds starts over, sign-in failures retry, and tab lists from several extensions are no longer merged over the bridge.
+- 🔴 Rewrote the Explore subagent's description so Claude uses it to find files and symbols, not for code review, design-doc audits or open-ended analysis, because it reads excerpts rather than whole files.
+
+[All 105 changes in 2.1.120](releases/2.1.120.md)
 
 ---
 
