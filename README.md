@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 85 releases from 2.1.**111** to 2.1.**327**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 86 releases from 2.1.**111** to 2.1.**327**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -1669,6 +1669,23 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 ### 2.1.156 ◆◆◆◆
 
 - 🟢 Stopped moving tool calls behind a later thinking block when a reply interleaves thinking with tool use, which made the API reject the conversation for modified thinking blocks; Claude Code now leaves such replies in order (and records the skip in telemetry), and its strip-and-retry recovery also recognises those errors when they mention `thinking` or `redacted_thinking`.
+
+---
+
+### 2.1.154 ◆◆◆◆
+
+- 🔴 Added an `ultracode` effort level wherever dynamic workflows are on and the model supports xhigh: it sets xhigh effort and tells Claude to run a Workflow for every substantive task, with reminders while it's on and no workflow usage prompt. It lasts for the session and is set with `/effort ultracode`, the `/effort` slider, the effort control of the model picker opened by its shortcut or from `/config`, the `ultracode` setting (for example through `--settings`) or the SDK's `apply_flag_settings` request; `/model` lists it too but ignores the choice.
+- 🔴 Changed the one-time "Auto mode is now Claude Code's default permission mode" announcement from a dialog you dismiss with Enter to a notice added to the conversation shortly after a session starts in auto mode by default.
+- 🔴 Added a Remote Control section to `/doctor` that checks each requirement in turn (first-party API, not inside a remote session, `disableRemoteControl`, a claude.ai subscriber login with the `user:profile` scope and an organization, feature-flag evaluation, the account switch), and gave clearer reasons when Remote Control is unavailable: flags turned off by `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`, `DISABLE_TELEMETRY`, `DO_NOT_TRACK` or `DISABLE_GROWTHBOOK`, an unreachable flag service, or an account not enabled yet (suggesting `claude auth login` or `claude doctor`). When no flags have arrived this session, it fetches them once more before giving a reason.
+- 🔴 Made `claude remote-control` skip sessions and work whose environment the server has already removed, and explain when the environment was cleaned up while the machine was offline, listing the worktrees it kept and suggesting `claude remote-control` for a fresh environment.
+- 🔴 Moved organization announcements (`companyAnnouncements`, "Message from <organization>:") and the model launch notice from the welcome banner into the startup notices below it, showing one of them at a time; an organization announcement takes priority over the Opus 4.8 launch notice.
+- 🔴 Expanded the "Using flicker-free rendering" notice with tips: scrolling with the trackpad, wheel or PageUp/PageDown, copying by selecting text (`/config` turns it off), clicking to move the cursor or expand collapsed results, and `/tui default` to go back, saved to your preferences.
+- 🔴 Made an existing claude.ai login take precedence over an `ant auth login` profile that Claude Code finds on its own in `~/.config/anthropic`; set `ANTHROPIC_PROFILE` to use the profile instead.
+- 🔴 Made the claude.ai connector list fetch try up to three times after server errors, failed DNS lookups and dropped, refused or timed-out connections, skipping another retry if its delay plus a five-second request would pass 12 seconds.
+- 🔴 Showed HTTP and SSE MCP servers whose OAuth discovery metadata fails validation after an authentication challenge as needing authentication, with the reason ("Server OAuth metadata invalid: …") in `/mcp`, instead of as failed.
+- 🔴 Stopped MCP servers from being reconnected or replaced when their configuration changes only in key order, plugin source, a recorded configuration error, or a stdio server's `type` or `args` being left out.
+
+[All 128 changes in 2.1.154](releases/2.1.154.md)
 
 ---
 
