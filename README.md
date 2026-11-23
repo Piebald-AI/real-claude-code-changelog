@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 91 releases from 2.1.**111** to 2.1.**327**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 92 releases from 2.1.**111** to 2.1.**327**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -1679,6 +1679,23 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 - 🔴 Added `cc_is_subagent=true` to the billing attribution line (`x-anthropic-billing-header: …`) that starts the system prompt of API requests made by subagents; the main session, after it's moved to the background, isn't counted as one.
 - 🟡 (2.1.198) Made subagents, and compaction's own summary request (used when the cache-sharing summary is off or fails), keep the session's extended thinking setting instead of turning thinking off, but only for models on a list Anthropic's servers send with the account's client data; without such a list, only forked subagents keep it, as before.
+
+---
+
+### 2.1.162 ◆◆◆◆
+
+- 🔴 Fixed the Bash permission parser's handling of `${…}` expansions that contain quotes, backticks, `$(…)` or line breaks, which it could end at the wrong `}`; ones it can't parse are now treated as too complex to approve automatically.
+- 🔴 Tightened how Bash permission checks follow shell variables: `unset` (and the wrapped `unsetenv` form) of `IFS`, `PS4` or other variables that change how commands run now needs approval, unset variables are tracked as empty, and assignments bash doesn't keep (in subshells, earlier pipeline stages, background `&` commands or `VAR=x command` prefixes) no longer count for later commands.
+- 🔴 Made git commands ask for approval when the folder's `.git` is a symlink or `gitdir:` file pointing back inside that folder or outside any `.git` folder, where an untrusted archive could have planted it; worktree and submodule layouts are unaffected, and folders that only look like a bare repository get a clearer explanation.
+- 🔴 Stopped auto-approving reads and writes of `.vscode` and `.idea` folders inside Claude's memory folders and a background job's temp folder, of any protected folder (such as `.git`, `.claude` or `node_modules`) inside a session's scratchpad (behind a remote switch that's off by default), and of shell, git and package-manager config files such as `.bashrc`, `.gitconfig`, `.npmrc` or `.mcp.json` inside the scratchpad or a job's temp folder.
+- 🔴 Fixed Linux symlink handling for `//wsl$/` and `//wsl.localhost/` paths, which no longer bypass resolution as network shares.
+- 🔴 Changed the transcript view to show thinking from every turn, hiding only the newest thinking block while a response streams and for 30 seconds after; before, it showed only the current turn's last thinking block, and none during or just after streaming.
+- 🔴 Changed "Prompt is too long" for a conversation of a single exchange to stop trying to compact and say why compaction can't help, telling apart a large conversation from a request made large by the system prompt, tools or attachments, followed by " · /clear to start fresh".
+- 🔴 Made Read say when requested PDF pages are outside the document, with its page count and a valid range, instead of a generic conversion error.
+- 🔴 Made reading a notebook that isn't valid JSON, or has no `cells` array of cell objects, fail with a clear message (for example that the file may be truncated or still being written).
+- 🔴 Fixed reads of notebooks with missing or null top-level metadata, using Python for code cells when the notebook doesn't name a language.
+
+[All 118 changes in 2.1.162](releases/2.1.162.md)
 
 ---
 
