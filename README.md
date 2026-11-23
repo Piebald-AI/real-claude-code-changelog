@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 100 releases from 2.1.**111** to 2.1.**327**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 101 releases from 2.1.**111** to 2.1.**327**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -2097,6 +2097,23 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 - 🟢 Changed the cross-project resume hint to use `;` on Windows; this Linux build never detects Windows.
 
 </details>
+
+---
+
+### 2.1.144 ◆◆◆◆
+
+- 🔴 Brought back Ctrl+E on Bash and PowerShell permission prompts, missing in 2.1.142 and 2.1.143: it asks the model to explain the command, why Claude is running it and what could go wrong, with a low, medium or high risk rating; the `permissionExplainerEnabled` config setting turns it off.
+- 🔴 Made permission prompts send a desktop notification and a `permission_prompt` Notification hook event after at least 6 seconds without interaction: "Claude needs your permission", or "Claude Code needs your approval for the plan" and "Claude Code wants to enter plan mode" for plan prompts (2.1.143 sent none, and 2.1.142 only for plan approval).
+- 🔴 Made the Bash permission check ask before more kinds of commands: zsh `<N-M>` range globs, brace expansion holding `$((…))` arithmetic with spaces, such as `{1..$((2 + 3))}` (plain `{a,b}` and `{1..3}` already asked), `read`, `printf -v`, `getopts`, `mapfile` and similar commands that write `IFS`, `PATH`-like or special shell variables (that list now also has `HISTFILE`, `ZDOTDIR` and `NULLCMD`), `declare -n`/`-i`/`-a`/`-A` reached through a wrapper such as `command` or `builtin` (the plain form already asked), array subscripts holding `$` or backticks in operands of `printf`, `print`, `getopts`, `set` and similar builtins, `set -o` options outside a safe list, `print -P` with a substitution, `jobs -x`, `find` with glob characters (`[`, `]`, `*` or `?`, quoted or not) in a path or other argument outside its pattern options such as `-name`, a `[[ … ]]` test whose quoted operand holds `]]` followed by a command separator, zsh builtins such as `setopt`, `repeat` and `zcompile`, and commands whose heredoc or other text the parser couldn't fully read. Its analysis also now looks inside `if`, `while`, `for` and `case` bodies, functions and `|&` pipelines.
+- 🔴 Fixed Bash permission parsing of quoted arguments: ANSI-C `$'…'` and locale `$"…"` quotes are now recognized inside joined arguments, and empty known-variable expansions don't make an otherwise unknown argument count as literal text. The brace checker no longer lets quotes in `#` comments affect later text, and the read-only glob/variable scan skips comments.
+- 🔴 Made read-only and sandbox auto-approval stricter: a command containing a subshell or a `{ …; }` group no longer counts as a simple read-only command, file-changing commands such as `rm`, `mv`, `cp` and `sed -i` ask when a checked path comes from `$(…)` or an untracked variable, and sandbox auto-allow no longer approves shell builtins such as `printf`, `read`, `declare`, `export`, `test` or `set` whose arguments hold `$(…)`, backticks, `$'…'`, `${…:=…}`, a `$` variable together with a `-`, brace expansion or unmatched braces, nor `jobs -x` or `set -o` with an option outside a safe list. One sandbox check got looser: a `[` in the arguments of `printf`, `test`, `read`, `wait` or `unset` now stops auto-allow only when that argument also holds `$` or a backtick.
+- 🔴 Stopped auto-approving read-only git commands such as `git log`, `git show` and `git rev-list` when `--format`, `--pretty` or `--sort` asks for signature details (`%G…` or `%(signature…)`), which makes git run its signature-checking program, or when that value comes from `$(…)` or an untracked variable.
+- 🔴 Made zsh run Claude's commands with bare glob qualifiers turned off (`NO_BARE_GLOB_QUAL`), next to the existing `NO_EXTENDED_GLOB`.
+- 🔴 Changed what happens when the sandbox can't start: with `sandbox.failIfUnavailable` (or when `CLAUDE_CODE_SUBPROCESS_ENV_SCRUB` relies on the sandbox) commands fail with "Sandbox is required but failed to initialize: <reason>. Restart to retry."; otherwise the first command fails with "… Sandboxing is disabled for the rest of this session; restart to retry." and later commands run without the sandbox. Before, every command failed with "Sandbox failed to initialize."
+- 🔴 Made background sessions take priority over `CLAUDE_CODE_NO_FLICKER=0`, `CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN`, iTerm2's tmux integration (`tmux -CC`) and the Windows-over-SSH check when choosing fullscreen rendering; the `local-agent` entrypoint still stays out of fullscreen.
+- 🔴 Stopped deleting a background session's transcript when the session is deleted from the agent view, undoing 2.1.143's change.
+
+[All 109 changes in 2.1.144](releases/2.1.144.md)
 
 ---
 
