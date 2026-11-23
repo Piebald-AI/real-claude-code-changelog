@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 101 releases from 2.1.**111** to 2.1.**327**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 102 releases from 2.1.**111** to 2.1.**327**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -2518,6 +2518,23 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 - 🔴 Made the cloud environment lookup used when starting a cloud session refresh the claude.ai sign-in and retry once after a 401, instead of failing.
 
 [All 82 changes in 2.1.122](releases/2.1.122.md)
+
+---
+
+### 2.1.117 ◆◆◆◆
+
+- 🔴 Removed `/autocompact` (the auto-compact window picker and its print-mode form); the `autoCompactWindow` setting and `CLAUDE_CODE_AUTO_COMPACT_WINDOW` still work, `/context` no longer points to the command, and the notice after an auto-compaction at a lowered window now says to set `autoCompactWindow` in settings.json.
+- 🔴 Made more Bash commands ask before running instead of passing as read-only: `cd` with two or more directory arguments (zsh's `cd OLD NEW`), `find` whose `-delete`, `-exec` or similar action is disguised with quotes or backslashes, ambiguous `sed -i` arguments that could hide another script, `git ls-remote` with a URL or more than one argument, `git reflog` subcommands other than `show` and `list`, `man` with a file path outside its keyword searches or with `-l`, `test` with `-v`, `-R`, `-a`, `-o` or an argument containing `[`, `date --iso-8601` followed by an argument, `rg -z`, `file -z`/`--uncompress`, and `file` in the PowerShell tool.
+- 🔴 Tightened Bash path and rule checks: a plain redirect to a numeric file name (`> 5`) is checked as a file write, quotes are no longer stripped from paths before checking, writes through a `..` that follows a directory ask (they may follow a symlink out of the working directory), a heredoc followed by a pipe or `&&`/`||` with nothing after it is treated as a parse error, the `acceptEdits` file-command check now checks every part before approving a compound command, a command too complex to parse is allowed only by a rule whose text equals the whole command, and blank lines are kept when comment lines are stripped before rule matching. `cd` path checks now skip flags and the `--` separator before choosing the directory, instead of including them in the path.
+- 🔴 Stopped slash-command and skill arguments from running shell commands: before an argument goes into the prompt, a `!` next to a backtick is split from it with a space and a `!` at the start of a word gets a backslash, so the argument can't form a `` !`…` `` block.
+- 🔴 Fixed dollar sequences such as `$&` and `$$` in skill, slash-command, and prompt/agent hook arguments being expanded as JavaScript replacement patterns instead of reaching the prompt unchanged.
+- 🔴 Made plugin installs refuse unsafe input: copying a plugin skips broken symlinks and symlinks that point outside it, and points internal links into the installed copy rather than the source folder; git refs and commit hashes that start with `-` are rejected, archive entries with a path segment of `..` followed by a space (and then only spaces or dots) are refused, and a version of `.` or `..` can't escape the plugin cache; the native installer likewise refuses version strings with path characters. Adding a marketplace also keeps only letters, digits, `-` and `_` in the name of the folder it works in, so a repository or package name can't put path characters there.
+- 🔴 Stopped assuming Opus 4.5 supports effort levels on Bedrock and Vertex; it keeps that default support on the Anthropic API, Claude Platform on AWS, Foundry and Mantle. Explicit model-capability overrides and `CLAUDE_CODE_ALWAYS_ENABLE_EFFORT` still take priority.
+- 🔴 Changed Sonnet 4.6's context-window override from an on/off 1M switch to a positive token count sent with the account's client data; that override also adds the 1M-context request header.
+- 🔴 Fixed default-branch detection returning the branch `origin/HEAD` names when that remote branch doesn't exist; it now falls back to `main` or `master`.
+- 🔴 Made GitHub repository detection fall back to `git config remote.origin.url`, and try again later after a failure instead of remembering it for the rest of the session.
+
+[All 78 changes in 2.1.117](releases/2.1.117.md)
 
 ---
 
