@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 89 releases from 2.1.**111** to 2.1.**327**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 90 releases from 2.1.**111** to 2.1.**327**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -2195,6 +2195,23 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 - 🟢 Added trust for Windows mapped network drives passed with `--add-dir` or SDK `additionalDirectories`; only drive-letter paths qualify, so Linux paths never do.
 
 </details>
+
+---
+
+### 2.1.129 ◆◆◆◆
+
+- 🔴 Changed file writes to reject a symlink at the destination and use random, exclusively created temporary files. Project/local settings also reject a symlinked parent outside the user settings directory; user-directory settings and global configuration writes still allow symlinks.
+- 🔴 Added organization-controlled permissions to claude.ai connector tools: blocked tools disappear from Claude's tool list, while ask-only tools always need approval, even with allow rules, bypass mode or auto mode, and don't offer a permanent-approval choice.
+- 🔴 Allowed permission-rule tool names containing underscores to start with a lowercase letter, and stopped treating inherited JavaScript object properties as custom permission validators.
+- 🔴 Changed the default model for API-key and workload-identity sessions on the Anthropic API and Claude Platform on AWS from Sonnet to Opus, with 1M context when eligible, and gave usage-based Enterprise subscribers the Opus default and model choices previously used by Max subscribers.
+- 🔴 Changed the signed-out/API-key `/model` list on the Anthropic API and Claude Platform on AWS to match the new Opus default: Opus appears only as the Default row, Sonnet gets its own row, and the additional Opus 1M choice appears only when the default Opus model isn't already using 1M context; custom model overrides still take precedence.
+- 🔴 Changed skill-listing budgets to keep full descriptions for the most-used skills and omit descriptions for lower-ranked skills when space runs out, instead of shortening every description together.
+- 🔴 Added `${CLAUDE_SKILL_DIR}` expansion inside a skill's `allowed-tools` entries, including plugin skills.
+- 🔴 Changed command lookup so local skills and plugin commands or skills take precedence over a bundled skill with the same name.
+- 🔴 Added `claude plugin validate` warnings explaining that `CLAUDE.md` and `CLAUDE.local.md` at a plugin's root aren't loaded as project context.
+- 🔴 Changed plugin downloads to keep their source-derived cache directory instead of renaming it to the plugin's declared name, and stopped install/update cleanup from deleting an old directory that contains the new one.
+
+[All 118 changes in 2.1.129](releases/2.1.129.md)
 
 ---
 
