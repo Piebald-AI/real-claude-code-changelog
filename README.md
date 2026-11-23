@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 90 releases from 2.1.**111** to 2.1.**327**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 91 releases from 2.1.**111** to 2.1.**327**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -1200,6 +1200,23 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 - 🔴 Reworded the warning logged when auto mode's classifier drops a beta that the API rejected; the retry that logs it only runs for a placeholder beta that's empty in this build.
 
 </details>
+
+---
+
+### 2.1.217 ◆◆◆◆
+
+- 🔴 Fixed `printf` commands whose format stacks several length modifiers (such as `%hhhd` or `%lLd`) being auto-approved without the argument checks other numeric formats get; arguments that aren't plain numbers (including ones holding `$(` or backticks) now make such a command ask first.
+- 🔴 Updated the background sessions list (`claude agents`): Home/End/PageUp/PageDown move through the list, key hints mention `ctrl+x` to stop or delete, deleting a pinned session also unpins it, and screen-reader labels identify pinned rows and folded finished sessions. In the simple view (`CLAUDE_CODE_FLEETVIEW_SIMPLE` or a remote switch, off by default), selected rows have a pointer, stopped and failed sessions have distinct icons, unnamed rows use "untitled session" or "session you came from", renaming warns about a duplicate name, working and idle counts are separate, folded finished rows name the failed count, an empty list names the logged-out state and `l` starts login, and pressing `q` twice quits; screen-reader mode also stops shortening pending-question and status-detail text. Renaming also gets more room by dropping the duplicate inline save/cancel hint; those keys stay in the footer.
+- 🔴 Changed unpinning a background session to also clear its saved manual position in the sessions list.
+- 🔴 Added dismissing a page from the footer's row of Artifact page links: select it and press `x`, Backspace or Delete (before, `x` did nothing there). The row only appears with the Artifact feature, which is behind a remote switch that's off by default.
+- 🔴 Changed the "Recalled" and "Remembered" lines for memories to start each memory's title with a lower-case letter so it reads as part of the line, except when the title's first word has a capital after its first letter (such as "API" or "iOS"); the agent step of a collapsed tool summary now keeps such words' capitals too.
+- 🔴 Added cleanup of empty claude.ai sessions left behind by Remote Control: about 15 seconds after connecting, Claude Code archives sessions it created earlier that were never used and whose process has exited (on by default through a remote switch; skipped when only essential traffic is allowed).
+- 🔴 Added a warning when `claude --teleport` brings a Remote Control session into the terminal, saying that new work in this local copy won't show up in the Claude app and that running `/remote-control` in it lets you continue on your phone.
+- 🔴 Changed `/import --yes` on surfaces without the picker to require the digest shown with the preview (`/import --yes=<digest>`) and to refuse when the config on disk changed since then; it now works across separate `claude -p` runs.
+- 🔴 Added `CLAUDE_CODE_DISABLE_EXPLORE_INHERIT_CAP`, which makes the built-in Explore agent always use your main model instead of being capped at Opus on the Anthropic API.
+- 🔴 Added `CLAUDE_CODE_AMBER_ASTROLABE` (or a remote switch, off by default), which gives any model the system-prompt section telling Claude it's working autonomously and shouldn't stop to ask before reversible steps.
+
+[All 71 changes in 2.1.217](releases/2.1.217.md)
 
 ---
 
