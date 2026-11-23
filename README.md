@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 106 releases from 2.1.**111** to 2.1.**330**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 107 releases from 2.1.**111** to 2.1.**330**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -97,6 +97,28 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
   - 🟢 Fixed global and project config saves after startup had to use defaults: if the file may be readable again just before replacement, Claude Code restarts the save so it can merge the edit into the existing config.
 
 [All 2,042 changes in 2.1.329](releases/2.1.329.md)
+
+---
+
+### 2.1.328 ◆◆◆◇
+
+- Plugin updates and installation
+  - 🔴 Loaded eligible installed plugin updates while a local session is idle: edits to existing skill, command, or agent text can take effect without a restart when the rest of the plugin still matches.
+- Repository diffs
+  - 🔴 Changed `/diff` to use the side panel in local fullscreen sessions without consulting `tengu_jazzy_ripple`, which was off by default and could switch `/diff` to the inline view; remote sessions still use the inline view.
+  - 🔴 Switched `/diff` to the inline view for remote workspaces and connected frontends, even when the terminal asks to open a fullscreen panel.
+- 🔴 Used the active `/goal` condition before a Stop prompt hook's fallback prompt when deciding whether the goal is done.
+- 🔴 Changed `/export` to write a new conversation file to a temporary file before placing it at the requested path without overwriting an existing file.
+- MCP tool names and connections
+  - 🔴 Retried listing tools at the start of a turn for connected, non-SDK MCP servers whose tool list failed, without requiring the `tengu_vivid_planet` flag, which was off by default.
+  - 🔴 Retried eligible rate-limited MCP connections at the start of a turn without requiring the `tengu_splendid_biscuit` flag, which was off by default.
+- Observer agents
+  - 🔴 Added `observeToolResults: false` to observer agent definitions from `--agents` or agent files, including plugin agents, to leave tool results out of that observer's activity digests.
+- Session startup and resumption
+  - 🔴 Added recovery for up to 100 eligible transcript rows that were written before a tool result was put back, with `tengu_foamy_spring` on by default.
+  - 🔴 Fixed resume to choose the last real user prompt rather than a metadata-only row put back earlier in the transcript.
+
+[All 2,107 changes in 2.1.328](releases/2.1.328.md)
 
 ---
 
