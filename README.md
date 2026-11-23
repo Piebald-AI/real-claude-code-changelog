@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 82 releases from 2.1.**111** to 2.1.**327**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 83 releases from 2.1.**111** to 2.1.**327**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -2218,6 +2218,23 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 ### 2.1.114 ◆◆◆◆
 
 - 🟢 Fixed tool permission dialogs crashing when the request came from outside the local session: from an agent teams teammate, or from a remote, direct-connect or SSH session. The crash came with 2.1.111.
+
+---
+
+### 2.1.113 ◆◆◆◆
+
+- 🔴 Removed the `/autopilot`, `/bugfix`, `/dashboard`, `/docs` and `/investigate` commands, each of which started a remote Claude Code session that ran that workflow on your task; they were offered to claude.ai sign-ins whose organization allows remote sessions.
+- 🔴 Renamed the bundled `/less-permission-prompts` skill to `/fewer-permission-prompts`; its instructions are unchanged apart from the title.
+- 🔴 Added message timestamps: a "Show message timestamps" switch in `/config` (`showMessageTimestamps`, off by default) puts the time above each of Claude's replies. The switch and the timestamps only appear while a remote switch that's off by default is on.
+- 🔴 Added an experimental renderer for the regular (non-fullscreen) screen that pins the prompt area to the bottom of the terminal with a scroll region and lets the conversation scroll into the terminal's own scrollback. It's used only with `CLAUDE_CODE_DECSTBM` or a remote switch that's off by default, in terminals with synchronized output outside tmux and Zellij; every session now also resets the terminal's scroll region when it starts and exits.
+- 🔴 Made `/feedback` failures say why, instead of "Could not submit feedback. Please try again later.": a not-signed-in failure points to `/login`, and any other failure names the server's status code, a timeout or an unreachable service when known and offers the GitHub issues page as a fallback. Behind a remote switch that's off by default, a sent report shows "Feedback sent" and its reference ID instead of offering to draft a GitHub issue.
+- 🔴 Reworded API server errors: a 5xx error now says it's a server-side issue that's usually temporary, an overloaded error says the API is at capacity, the status-page pointer shown with Anthropic's API and Claude Platform on AWS now reads "If it persists, check" the status page, and an error whose message carries a JSON body shows the message from inside it.
+- 🔴 Changed the `/compact` description to "Free up context by summarizing the conversation so far" and `/exit`'s from "Exit the REPL" to "Exit the CLI".
+- 🔴 Made `-n`/`--name` show the session name in the prompt box from the start, as `/rename` does, and keep that name when resuming a session saved under another one; its help text now says so.
+- 🔴 Made deep links (`claude-cli://open`) stricter about what they hand to the new session: a working directory that's a network path or contains invisible or bidirectional-control characters is now refused, C1 control characters are refused in the directory and the prompt, and directory and prompt now travel base64-encoded (`--deep-link-cwd-b64`, `--prefill-b64`) to Ghostty, Tilix, xterm and other terminals without a launch rule of their own. A terminal that won't start in the directory is retried without it, launch failures print "Deep link error: …", and a prefilled prompt can no longer be read as `--settings` or `--setting-sources` when settings load early.
+- 🔴 Made the Vertex AI regions `us` and `eu` use Google's multi-region endpoints (`aiplatform.us.rep.googleapis.com`, `aiplatform.eu.rep.googleapis.com`) instead of a `us-aiplatform…` or `eu-aiplatform…` host; the Vertex setup wizard now suggests `us` and `eu`.
+
+[All 103 changes in 2.1.113](releases/2.1.113.md)
 
 ---
 
