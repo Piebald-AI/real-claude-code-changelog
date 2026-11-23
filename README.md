@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 83 releases from 2.1.**111** to 2.1.**327**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 84 releases from 2.1.**111** to 2.1.**327**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -1989,6 +1989,23 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 - 🟢 Made background jobs on macOS relaunch themselves as their own responsible process, so reading files under `~/Documents`, `~/Desktop` or `~/Downloads` stops failing with "Operation not permitted"; macOS only.
 
 </details>
+
+---
+
+### 2.1.140 ◆◆◆◆
+
+- 🔴 Stopped sandbox cleanup from deleting a `hooks` or `config` file or folder created at the top of the working directory, and from recursively deleting a newly created `HEAD` directory. It still removes new `HEAD` files and new `objects` or `refs` paths (which could make the folder pass for a bare git repository), now also removes a newly planted `.git` file, and blocks writes to an existing `.git` file.
+- 🔴 Made shutting down the sandbox close its network proxies' open connections and force-stop its Linux bridge processes after 1.5 seconds instead of 5, so a lingering proxy connection no longer holds the shutdown open.
+- 🔴 Fixed the agents view skipping a later automatic relaunch when an update was ready before the six-hour delay after its previous relaunch had ended: it now rechecks that delay hourly while the terminal is unfocused, and still waits for an hour without input.
+- 🔴 Made relaunching Claude Code (switching the terminal renderer, reattaching a Remote Control session, opening the agents view) replace the running process instead of starting a child process, falling back to a child process if that fails.
+- 🔴 Made the context estimate for messages since the last API response count one token per 3 characters instead of 4 on any model outside a list of older ones (Claude 3 through the 4.6 generation and Haiku 4.5), such as Opus 4.7 or a model name Claude Code doesn't recognise, so auto-compaction and the hard context-limit stop both come a little sooner on them.
+- 🔴 Added a progress bar with an estimated percentage under the spinner while a conversation is being compacted, on terminals wide enough to show it.
+- 🔴 Started preparing a recovery-compaction summary in the background on one-million-token models with the default compaction window, at the earlier of 90% of the effective window or the ordinary compaction threshold, behind two remote switches that are off by default; the conversation itself isn't compacted at 90%. `CLAUDE_CODE_BLOCKING_LIMIT_OVERRIDE` also no longer starts that preparation before the compaction threshold.
+- 🔴 Showed the full text of ordinary teammate messages in the main conversation, not just in transcript view, and rendered their Markdown.
+- 🔴 Stopped counting ongoing `/loop`, routine and scheduled-task sessions as completed in the agents view after a successful turn, and stopped putting them in the pull-request review group.
+- 🔴 Made the agents-view heading follow the folder selected for new work, including an `@repository` choice, instead of always showing the launch folder.
+
+[All 68 changes in 2.1.140](releases/2.1.140.md)
 
 ---
 
