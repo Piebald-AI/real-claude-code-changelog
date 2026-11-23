@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 86 releases from 2.1.**111** to 2.1.**327**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 87 releases from 2.1.**111** to 2.1.**327**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -1433,6 +1433,23 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 - 🔴 Added a remote per-model block: when Anthropic's server-side config gives a model a block message, most requests to it, including the conversation's and subagents', stop before reaching the API and show that message as a rate-limit error, and `/model` lists the model as disabled with the config's hint. The config is empty by default.
 - 🔴 Limited the "Meet Fable 5" startup announcement ("Fable 5 is here!" when you're already on it) to the Anthropic API, so users of other providers who have Fable set up no longer see it, and stopped showing it when its remote switch has no value, which used to let it show.
+
+---
+
+### 2.1.176 ◆◆◆◆
+
+- 🔴 Changed fork subagents (`CLAUDE_CODE_FORK_SUBAGENT` or a remote switch, off by default) to start only with `subagent_type: "fork"`: leaving `subagent_type` out now starts a fresh general-purpose agent, an `Agent(fork)` deny rule refuses them, and `isolation: "remote"` is refused for a fork. Resuming a custom agent named `fork` now uses that agent's own definition instead of the built-in fork's prompt and tools.
+- 🔴 Added automatic sign-in for HTTP and SSE MCP servers at `https://api.anthropic.com`: on the Anthropic API with a claude.ai login, Claude Code sends your claude.ai token itself (refreshing it once after a 401) instead of an MCP OAuth flow, unless the server config sets its own `Authorization` header, and `/mcp` stops offering to authenticate them; a refusal reads "api.anthropic.com rejected your claude.ai login" with a `/login` hint.
+- 🔴 Fixed SSE MCP connections dropping transport-provided headers, including the negotiated MCP protocol version, when those headers arrive as a `Headers` object.
+- 🔴 Replaced the silent Claude in Chrome auto-enable with a one-time startup question, "Claude in Chrome extension detected" ("Yes, use my browser" / "No, keep browser tools off"), whose answer becomes your default; it isn't asked in SSH, remote, teleported, safe-mode, bypass-permissions or teammate sessions (remote switch, off by default).
+- 🔴 Stopped Claude in Chrome turned on by your saved default from making startup fail with "You cannot dynamically configure MCP servers when an enterprise MCP config is present": with an enterprise MCP config, a `deniedMcpServers` entry for it or `--safe-mode`, the session now starts without Chrome, and `--chrome` with a denied server warns "MCP server blocked by enterprise policy".
+- 🔴 Made the bundled `claude-in-chrome` skill available in every session that sets up Claude in Chrome (it was only offered in the remote auto-enable variant), and turned it off again when managed policy blocks the Chrome server.
+- 🔴 Fixed `/config` showing "Claude in Chrome enabled by default" as on when you had never set it; Claude in Chrome stayed off in that case.
+- 🔴 Stopped reporting a missing local Claude in Chrome extension as a setup issue when a paired browser is registered.
+- 🔴 Widened Bash's dangerous `rm`/`rmdir` check, which always asks and can't be allowed by rules, to globs that would empty the working folder, an added working folder or a parent of either (`rm -rf *`), targets behind symlinks (including a symlinked home folder), relative globs in commands chained with `;`, `|` or `&` or after a `cd` it can't follow, and globs built from variables, `~`, `..` or `//`; path spellings such as `/bin/rm` and `/usr/bin/env rm` now count too.
+- 🔴 Escaped transcript tags and normalized line separators in auto mode's safety-classifier tool inputs, added the same escaping to user messages when its JSON-line transcript format is enabled, and escaped `<user_claude_md>` tags in the CLAUDE.md it reads.
+
+[All 89 changes in 2.1.176](releases/2.1.176.md)
 
 ---
 
