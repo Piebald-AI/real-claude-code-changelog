@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 84 releases from 2.1.**111** to 2.1.**327**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 85 releases from 2.1.**111** to 2.1.**327**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -1646,6 +1646,23 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 - 🔴 Fixed the warning that auto mode can't be used ("auto mode disabled by settings", "auto mode is unavailable for your plan" or "auto mode unavailable for this model") waiting unseen in the notification queue until something else made the notification area check it, when it came from the startup check or the re-check after a model or fast mode change; it now shows as soon as the notification area is free, and a second copy isn't queued.
 - 🔴 Stopped sending the first word of each command in the Bash tool's analytics events for finished and failed commands; they now report one of 22 common command names (such as `npm`, `python`, `docker` or `curl`) or "other", as the other Bash events already did.
 - 🟢 Made auto mode available on Bedrock, Mantle, Vertex, Foundry and gateway providers when `CLAUDE_CODE_ENABLE_AUTO_MODE` is set, for Opus 4.7, Opus 4.8 and model names Claude Code doesn't recognise (Opus 4.6, Sonnet and Haiku stay unsupported there). The variable counts as safe in a settings file's `env` block, so it applies before workspace trust and needs no managed-settings approval.
+
+---
+
+### 2.1.157 ◆◆◆◆
+
+- 🔴 Added a silent retry after a safety-filter refusal for sessions on the default Opus model, turned on by a server-side setting (`convolute_arcades` in the account's client data): the message is sent again on the same model, without switching models or showing the fallback notice, and later requests in the session carry an `x-is-refusal-fallback: true` header.
+- 🔴 Changed history navigation in the prompt: up or down on the first or last line now goes straight to the previous or next prompt instead of first moving through wrapped rows, and a recalled prompt puts the cursor at its end rather than its start; `k` and `j` in vim normal mode work the same way. Before, a remote switch that was off by default turned this on.
+- 🔴 Added a "History N/M" label to the prompt's border while you browse this project's earlier prompts, behind a remote switch that's off by default.
+- 🔴 Made submitting a prompt reset history browsing right away, so pressing up while a slash command or `!` shell command is still running starts from your newest prompt instead of carrying on from wherever you'd browsed to before submitting.
+- 🔴 Added a feature-of-the-week offer, configured remotely and off unless Anthropic sets it: the welcome screen shows "Feature of the week: /<command> — …" with the usage credits you get for running it, a redeem-by date and a link to the promotion terms, and a spinner tip mentions it; the offer can name any command, where the credit claim used to cover only `/loop`, `/review` and `/security-review`.
+- 🔴 Stopped a slow feature-of-the-week eligibility refresh from overwriting newer cached information, such as a claim's unavailable result, so an earlier response can't make the command look eligible again.
+- 🔴 Moved the guest-passes promotion ("3 guest passes at /passes", or the usage credits you can earn by sharing) from the welcome screen to the startup notices, shown at most three times and not while a feature-of-the-week offer is live.
+- 🔴 Stopped the welcome screen and company announcements from showing the name and organization of a saved claude.ai account while you're signed in another way.
+- 🔴 Hid notices that a background task was killed and left subagents out of the footer's background-task indicator in interactive sessions, behind a remote switch that's on by default; before, only fork-subagent mode (`CLAUDE_CODE_FORK_SUBAGENT` or a remote switch that was off by default) did this.
+- 🔴 Let project and local settings set `autoMemoryDirectory` once you've accepted the workspace trust dialog, and in non-interactive sessions; managed settings and `--settings` still win, and user settings come after.
+
+[All 113 changes in 2.1.157](releases/2.1.157.md)
 
 ---
 
