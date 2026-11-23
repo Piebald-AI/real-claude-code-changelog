@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 104 releases from 2.1.**111** to 2.1.**327**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 106 releases from 2.1.**111** to 2.1.**330**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -59,6 +59,46 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 - The tools we develop to produce this changelog are closed source for the time being.
 
 # Changelog
+
+### 2.1.330 ◆◆◆◇
+
+- Compaction
+  - 🔴 Deferred automatic compaction while a Code Mode script's report still needs to be delivered.
+  - 🟢 Sped up compaction in long sessions by looking up the turns that stay in the conversation by message ID instead of searching the whole message list for each one.
+- 🔴 Added image attachments to side questions, with instructions for the side-question model to treat text in the image as reference data.
+- Local `/ship` pull request workflow
+  - 🔴 Added a local `/ship` workflow behind `tengu_ancient_backus` (off by default) that reviews your GitHub pull request and can keep watching its checks, conflicts, and review feedback from the same Claude Code session.
+- 🔴 Changed Plan mode to use the conversation's current size when selecting its model, so `opusplan` can stick with the main model above 200,000 tokens.
+- `/mcp` server list
+  - 🔴 Made `/mcp` explain when a configured local server command isn't installed or isn't on `PATH`.
+  - 🟢 Split the `/mcp` server list's remaining entries into `Plugin MCPs`, with a pointer to `/plugin`, and `Other MCPs`, so you can tell which ones are managed by plugins.
+  - 🟢 Showed which plugin supplies an MCP server in its details, including servers registered by a plugin at runtime.
+  - 🟢 Kept MCP server details open after a reconnect failure in `/mcp` and `/plugin`, so users can read the error and retry or sign in.
+  - 🟢 Made `claude mcp remove` explain that claude.ai connectors must be turned off in `/mcp` or removed from the claude.ai account.
+
+[All 1,629 changes in 2.1.330](releases/2.1.330.md)
+
+---
+
+### 2.1.329 ◆◆◆◇
+
+- Teleport and cloud sessions
+  - 🔴 Changed `/teleport` to refuse a move that would lose an unsent draft, including one you've stashed.
+  - 🟢 Fixed `/teleport` to pull a different cloud session into a fresh session and leave the old one available in `/resume` when the local session is resumable and `tengu_mellow_prism` is on, as it is by default.
+- Code review
+  - 🔴 Changed `/code-review` to fetch the named GitLab merge request diff with `glab mr diff`, and only use files in the checkout for context or fixes if they match that diff.
+  - 🟢 Changed `/code-review` to fetch the named GitHub pull request diff with `gh pr diff`, and only use files in the checkout for context or fixes if they match that diff.
+  - 🟢 Changed `/code-review` on most models to compare the whole branch against the default branch when you don't name a target.
+  - 🟢 Changed `/code-review` with a pull request URL or with a pull request number and `--fix` to stop without reviewing if it can't read the pull request diff.
+- Settings and config saves
+  - 🔴 Made the consumer terms and data-sharing screens ignore quick or mixed-in keypresses that could turn on model improvement by accident, and dim the opt-in control while it can't be used.
+  - 🔴 Added notices to the `/config` rows for Show tips, Reduce motion, and Output style when a local settings file overrides the choice.
+  - 🔴 Changed `/config` so closing a picker returns to the settings page it was opened from.
+  - 🟢 Fixed global and project config saves after startup had to use defaults: if the file may be readable again just before replacement, Claude Code restarts the save so it can merge the edit into the existing config.
+
+[All 2,042 changes in 2.1.329](releases/2.1.329.md)
+
+---
 
 ### 2.1.327 ◆◆◆◆
 
