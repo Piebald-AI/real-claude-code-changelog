@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 87 releases from 2.1.**111** to 2.1.**327**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 88 releases from 2.1.**111** to 2.1.**327**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -1645,6 +1645,23 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 
 - 🔴 Added `cc_is_subagent=true` to the billing attribution line (`x-anthropic-billing-header: …`) that starts the system prompt of API requests made by subagents; the main session, after it's moved to the background, isn't counted as one.
 - 🟡 (2.1.198) Made subagents, and compaction's own summary request (used when the cache-sharing summary is off or fails), keep the session's extended thinking setting instead of turning thinking off, but only for models on a list Anthropic's servers send with the account's client data; without such a list, only forked subagents keep it, as before.
+
+---
+
+### 2.1.161 ◆◆◆◆
+
+- 🔴 Made `/fork`, which starts a background agent that carries the whole conversation, available in local interactive sessions outside coordinator mode, and made pressing `f` on a side question fork that way instead of branching the conversation. Before, both needed `CLAUDE_CODE_FORK_SUBAGENT` or a remote rollout, and `/fork` otherwise ran `/branch`, which no longer has `fork` as an alias.
+- 🔴 Showed more of the interface in `claude --remote` sessions: the permission-mode indicator, the terminal progress bar, usage-limit and usage-credit notices, model-deprecation warnings, the server-sent startup notice and "[Request interrupted by user]" markers. The hint after the first Ctrl+C now reads "detach (session keeps running)" instead of "exit".
+- 🔴 Made `claude --remote` sessions skip loading the local MCP server configuration at startup, by marking the session as remote before that configuration is read.
+- 🔴 Made `/model <name>` in a `claude --remote` session check organization model restrictions, 1M-context availability and whether the model exists before asking the cloud session to switch, and show the reason when it can't.
+- 🔴 Made `claude --remote` sessions retry when connecting to the cloud session takes more than 30 seconds, and warn "Some earlier messages from this session could not be loaded after reconnecting." when the replay after a reconnect has a gap.
+- 🔴 Moved several startup toasts into the counted "N setup issues · /doctor" startup notice: failed plugin marketplace installs and flagged plugins now count under plugins, and Claude in Chrome lacking a claude.ai subscription or its extension, an unavailable sandbox and a status line skipped for workspace trust get their own counts. The npm-to-native-installer warning and the model deprecation warning became startup notices too.
+- 🔴 Moved the IDE selection indicator ("⧉ N lines selected", "⧉ In <file>"), the debug tag (now "Debug", was "Debug mode") and the cloud-session link (now "◉ cloud", was "◉ remote") from the status line into the row with the Remote Control status and mode labels; that row isn't drawn in fullscreen mode, so there they no longer appear. Stopped hiding the update-installed restart notice while an IDE file or text selection is active.
+- 🔴 Added a hint to teammate pane failures caused by tmux having no room for another split: spawn fewer teammates, enlarge the terminal, or switch to in-process teammates in `/config`.
+- 🔴 Renamed the teammate notices from "N agents spawned" and "N agents shut down" to "N teammates started" and "N teammates shut down", and dropped "swarm" from the `/color` and `/rename` refusals in teammate sessions.
+- 🔴 Changed the usage-limit message for a monthly spend cap (`org_level_disabled_until`, or the new `org_spend_cap_reached`) to "You've hit your monthly spend limit" or "your org's monthly spend limit", with where to raise it (claude.ai/settings/usage, or claude.ai/admin-settings/usage on Team and Enterprise) or a request to ask an admin. `org_spend_cap_reached` also gets the cap wording in fast mode and the other limit messages, no longer clears the saved fast-mode preference or disables its saved organization eligibility, and reaches SDK hosts as `org_level_disabled_until`.
+
+[All 114 changes in 2.1.161](releases/2.1.161.md)
 
 ---
 
