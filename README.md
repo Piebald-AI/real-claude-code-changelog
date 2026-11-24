@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 107 releases from 2.1.**111** to 2.1.**330**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 108 releases from 2.1.**111** to 2.1.**331**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -59,6 +59,26 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 - The tools we develop to produce this changelog are closed source for the time being.
 
 # Changelog
+
+### 2.1.331 ◆◆◆◆
+
+- Rewind and file backups
+  - 🔴 Fixed `/rewind` reporting success for a missing file when its backup is missing too, and updated the failure message when nothing could be restored.
+  - 🔴 Changed `/rewind` to tell you that files can't be restored if the selected message or a later file snapshot has a change Claude Code couldn't record.
+- Automatic safety checks and approvals
+  - 🔴 Fixed plan mode to use its own permissions after a plan-mode transition rather than treating the availability of bypass permissions as permission to run tools.
+  - 🔴 Fixed removed allow rules reappearing after auto mode ends if those rules had been set aside while auto mode was active.
+  - 🔴 Fixed deferred tool calls so that a permission refusal stays in effect when a call is resumed, with `tengu_quizzical_knuth` on by default.
+  - 🔴 Changed Claude's input to identify hook output and Claude's own reminders separately from user messages, with `bot_protected_tengu_shiny_fountain` on (on by default) unless `CLAUDE_CODE_SHINY_FOUNTAIN` overrides it.
+  - 🟢 Turned on Agent permission checks when a coordinator or peer message resumes an existing agent, replacing `tengu_quizzical_piglet`, which kept them off by default; a rule that denies or requires approval for the Agent tool, agent type, model, or background execution can block the resume, but model rules don’t apply if the agent was started on this version without a named model.
+- Session lists and history
+  - 🔴 Changed in-session resume to use the folder a conversation was listed under when there isn't a saved project path, and warn when it can't match the conversation to its recorded location.
+  - 🔴 Added a warning with a `/cd` hint when a resumed conversation stays in the current folder instead of returning to its recorded folder; worktree sessions and conversations with a saved project path skip the warning.
+  - 🔴 Changed `/resume` to treat inferred worktree folders as hints and check them against the saved working directory when `bot_protected_tengu_golden_cook` is on (on by default).
+
+[All 2,340 changes in 2.1.331](releases/2.1.331.md)
+
+---
 
 ### 2.1.330 ◆◆◆◆
 
