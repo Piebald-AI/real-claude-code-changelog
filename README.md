@@ -115,7 +115,7 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
   - 🟢 Kept MCP server details open after a reconnect failure in `/mcp` and `/plugin`, so users can read the error and retry or sign in.
   - 🟢 Made `claude mcp remove` explain that claude.ai connectors must be turned off in `/mcp` or removed from the claude.ai account.
 
-[All 1,676 changes in 2.1.330](releases/2.1.330.md)
+[All 1,686 changes in 2.1.330](releases/2.1.330.md)
 
 ---
 
