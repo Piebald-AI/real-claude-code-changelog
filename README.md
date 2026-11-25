@@ -14,7 +14,7 @@ Here are 3 examples of changes that were shipped but not announced at all:
 
 > **A comment from a writer on a watched Artifact can trigger automatic edits to it**, subject to server-side re-checks on the writer, the edit grant, file count, size and rate. *(2.1.248)*
 
-There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 108 releases from 2.1.**111** to 2.1.**331**.
+There are a lot more (over 100) in the [changelog below](#changelog).  **Coverage:** 109 releases from 2.1.**111** to 2.1.**332**.
 
 :point_right: **[Read the changelog ↓](#changelog)**
 
@@ -59,6 +59,25 @@ If so, please [open an issue](https://github.com/Piebald-AI/real-claude-code-cha
 - The tools we develop to produce this changelog are closed source for the time being.
 
 # Changelog
+
+### 2.1.332 ◆◆◇◇
+
+- Feedback and usage
+  - 🔴 Changed `/context`'s MCP attachment estimates to use the current session and permission context when deciding which server instructions apply.
+  - 🟢 Changed `/context` to show a more compact summary of MCP tools, agents, memory files, and skills, with `/context all` shown as the way to expand them.
+  - 🟢 Changed `/context` to put the model and total token count beside the usage graphic, under “Context usage,” with the category list labeled “Estimated tokens by category.”
+  - 🟢 Changed the compact `/context` summary to show nonzero context-item counts and mark types loaded on demand.
+  - 🟢 Changed `/stats` to give the terminal time to respond while it reads and counts entries in long session logs.
+  - 🟢 Fixed Claude Code using an expired rate-limit rejection to suggest waiting after the reset time has already passed.
+  - 🟢 Changed the terminal's rate-limit options to appear only on an actual API error rather than on matching text in a normal reply.
+- Terminal input and dialogs
+  - 🔴 Routed the composer’s history search shortcut to the history picker in interactive fullscreen sessions.
+  - 🔴 Changed Ctrl+R prompt history search to skip nonmatching and duplicate entries during the scan, including entries whose collapsed pasted text doesn't match.
+  - 🔴 Changed the prompt-history picker to reuse the previous matches as you extend the query, including matches inside collapsed pasted text.
+
+[All 1,913 changes in 2.1.332](releases/2.1.332.md)
+
+---
 
 ### 2.1.331 ◆◆◆◆
 
